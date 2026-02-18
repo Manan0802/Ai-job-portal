@@ -48,3 +48,6 @@ client_secret.json
 # Temp files
 *~
 *.swp
+
+# AI Config
+scrapper/ai_config.json

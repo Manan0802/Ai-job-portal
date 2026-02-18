@@ -10,6 +10,9 @@ import time
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+from resume_tailor import ResumeTailor
+from networking_agent import NetworkingAgent
+import json
 
 # ========== PAGE CONFIGURATION ==========
 st.set_page_config(
@@ -651,7 +654,7 @@ def main():
     # Main page selection
     main_page = st.sidebar.radio(
         "Select View",
-        ["🤖 AI Recommendations", "🔍 Manual Search"],
+        ["🤖 AI Recommendations", "🔍 Manual Search", "📝 Resume Tailor", "🤝 Networking Engine"],
         label_visibility="collapsed"
     )
     
@@ -1138,8 +1141,240 @@ Return ONLY a JSON array:
             elif sort_by == "Company (A-Z)" and 'company' in search_results.columns:
                 search_results = search_results.sort_values('company')
             
+            
             for idx, job in search_results.iterrows():
                 render_job_card(job, idx)
+
+    # ========== PAGE: RESUME TAILOR ==========
+    elif page == "📝 Resume Tailor":
+        st.markdown("## 📝 Resume Tailor")
+        st.markdown("*Adapt your resume and cover letter for specific job roles.*")
+        
+        # Load necessary data
+        resume_tailor = ResumeTailor()
+        
+        # Two columns: Job Selection & Resume Preview (future)
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("### 1️⃣ Job Description")
+            job_input_method = st.radio("Input Method", ["Paste JD Text", "Select from Database"], horizontal=True)
+            
+            job_description = ""
+            company_name = "Target Company"
+            job_title = "Target Role"
+            
+            if job_input_method == "Select from Database":
+                if not df.empty:
+                    # Create a selection box with formatted strings
+                    job_options = [f"{row['company']} - {row['title']}" for _, row in df.iterrows()]
+                    selected_job_str = st.selectbox("Select a Job", job_options)
+                    
+                    if selected_job_str:
+                        # Find the selected row
+                        selected_row = df[df.apply(lambda row: f"{row['company']} - {row['title']}" == selected_job_str, axis=1)].iloc[0]
+                        job_description = str(selected_row.get('description', '')) 
+                        # If description is missing from sheet (which it usually is), warn user
+                        if not job_description or job_description == 'nan':
+                             st.warning("⚠️ Full Job Description not found in database. Please paste it below.")
+                             job_description = st.text_area("Job Description (Paste here)", height=200)
+                        else:
+                             st.success("✅ Job Description loaded!")
+                             with st.expander("View JD"):
+                                 st.write(job_description)
+                        
+                        company_name = selected_row['company']
+                        job_title = selected_row['title']
+                else:
+                    st.warning("No jobs in database.")
+            else:
+                company_name = st.text_input("Company Name", "Target Company")
+                job_title = st.text_input("Job Title", "Target Role")
+                job_description = st.text_area("Paste Job Description Here", height=300)
+
+        with col2:
+            st.markdown("### 2️⃣ Analysis & Tailoring")
+            
+            if st.button("🚀 Analyze & Tailor Resume", type="primary", use_container_width=True):
+                if not job_description or len(job_description) < 50:
+                    st.error("Please provide a valid Job Description.")
+                else:
+                    with st.spinner("🤖 Analyzing gaps and generating suggestions..."):
+                        # Load master resume
+                        script_dir = os.path.dirname(os.path.abspath(__file__))
+                        resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
+                        
+                        if os.path.exists(resume_path):
+                            with open(resume_path, 'r', encoding='utf-8') as f:
+                                master_resume_text = f.read()
+                            
+                            # Run Analysis
+                            analysis_result = resume_tailor.analyze_gap(master_resume_text, job_description)
+                            
+                            # Save to session state to persist
+                            st.session_state.analysis_result = analysis_result
+                            st.session_state.target_company = company_name
+                            st.session_state.target_role = job_title
+                            st.session_state.master_resume_text = master_resume_text
+                            st.session_state.current_job_description = job_description
+                        else:
+                            st.error("Master resume not found in Assets folder.")
+            
+        # Display Results if available
+        if 'analysis_result' in st.session_state:
+            result = st.session_state.analysis_result
+            
+            st.divider()
+            
+            # Gap Analysis
+            st.subheader("🔍 Gap Analysis")
+            missing = result.get('missing_keywords', [])
+            if missing:
+                st.write("**Missing Keywords identified:**")
+                st.markdown(" ".join([f"`{k}`" for k in missing]))
+            else:
+                st.success("✅ No major missing keywords found!")
+                
+            # Bullet Point Suggestions
+            st.subheader("✍️ Suggested Improvements")
+            st.info("Select the changes you want to apply to your tailored resume.")
+            
+            suggestions = result.get('suggested_points', [])
+            selected_points = []
+            
+            for i, point in enumerate(suggestions):
+                with st.container():
+                    col_chk, col_content = st.columns([0.1, 0.9])
+                    with col_chk:
+                        if st.checkbox("", key=f"chk_{i}", value=True):
+                            selected_points.append(point['new'])
+                    with col_content:
+                        st.markdown(f"**Original:** {point.get('original', 'New Addition')}")
+                        st.markdown(f"**✨ Suggestion:** {point['new']}")
+                        st.caption(f"💡 *Reason: {point['reason']}*")
+                        st.markdown("---")
+            
+            # Final Actions
+            st.subheader("📄 Generate Assets")
+            
+            col_gen1, col_gen2 = st.columns(2)
+            
+            with col_gen1:
+                if st.button("💾 Generate Tailored PDF", type="primary", use_container_width=True):
+                    # In a real scenario, we would parse the resume structure and replace.
+                    # For now, we created a simple PDF generator that takes a dict.
+                    # We will simulate "applying" checks by creating a dummy structure or 
+                    # prompting user that "Auto-replace is experimental".
+                    # Let's use the Master Resume text + Selected Points as a simple append for now
+                    # or better, reconstruct a simple dict structure.
+                    
+                    with st.spinner("Generating PDF..."):
+                        # Simple structure for demo (since we don't have a resume parser yet)
+                        resume_data = {
+                            "name": "Manan Kumar", # Replace with dynamic if possible
+                            "email": "manan@example.com",
+                            "summary": f"Aspiring {st.session_state.target_role} passionate about {st.session_state.target_company}.",
+                            "experience": [
+                                {
+                                    "title": "Relevant Project/Experience",
+                                    "points": selected_points if selected_points else ["No changes selected."]
+                                }
+                            ],
+                            "skills": str(missing) # Showing added skills
+                        }
+                        
+                        pdf_path = f"Tailored_Resume_{st.session_state.target_company}.pdf"
+                        result_path = resume_tailor.create_pdf(resume_data, pdf_path)
+                        
+                        if result_path:
+                            st.success(f"✅ PDF Generated: {result_path}")
+                            with open(result_path, "rb") as pdf_file:
+                                st.download_button(
+                                    label="Download Resume PDF",
+                                    data=pdf_file,
+                                    file_name=pdf_path,
+                                    mime="application/pdf"
+                                )
+            
+            with col_gen2:
+                if st.button("✉️ Generate Cover Letter", use_container_width=True):
+                     with st.spinner("Drafting letter..."):
+                         cl_text = resume_tailor.generate_cover_letter(
+                             st.session_state.master_resume_text,
+                             st.session_state.current_job_description,
+                             st.session_state.target_company
+                         )
+                         st.session_state.cover_letter = cl_text
+            
+            if 'cover_letter' in st.session_state:
+                st.text_area("Cover Letter", st.session_state.cover_letter, height=300)
+                st.download_button("Download Cover Letter", st.session_state.cover_letter, f"Cover_Letter_{st.session_state.target_company}.txt")
+
+
+    # ========== PAGE: NETWORKING ENGINE ==========
+    elif page == "🤝 Networking Engine":
+        st.markdown("## 🤝 Networking Engine")
+        st.markdown("*Find specific people and generate personalized outreach messages.*")
+        
+        networking_agent = NetworkingAgent()
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+             st.markdown("### 🎯 Target")
+             company_name = st.text_input("Target Company", placeholder="e.g. Google")
+             role_filter = st.selectbox("Who to find?", ["Recruiter", "University Recruiter", "Software Engineer", "Alumni (DTU)"])
+             
+        with col2:
+            st.markdown("### 🔍 Search")
+            if st.button("Find People", type="primary", use_container_width=True):
+                if company_name:
+                    with st.spinner(f"Searching for {role_filter}s at {company_name}..."):
+                        results = networking_agent.find_potential_contacts(company_name, role_filter)
+                        st.session_state.network_results = results
+                        st.session_state.network_company = company_name
+                else:
+                    st.error("Enter a company name.")
+                    
+        st.divider()
+        
+        if 'network_results' in st.session_state:
+            st.subheader(f"Found Contacts at {st.session_state.network_company}")
+            
+            results = st.session_state.network_results
+            if not results:
+                st.warning("No results found. Try a different role or company.")
+            
+            for i, person in enumerate(results):
+                with st.container():
+                    c1, c2 = st.columns([2, 1])
+                    with c1:
+                        st.markdown(f"**{person['name']}**")
+                        st.caption(person['headline'])
+                        st.markdown(f"[View Profile]({person['link']})")
+                    with c2:
+                        if st.button(f"Generate Message", key=f"net_msg_{i}"):
+                            st.session_state[f"msg_{i}"] = True
+                    
+                    if st.session_state.get(f"msg_{i}"):
+                        person_name = person['name'] if person['name'] else "Recruiter"
+                        tab1, tab2 = st.tabs(["Connection Request", "Cold Email"])
+                        with tab1:
+                            req_msg = networking_agent.generate_connection_request(
+                                "Manan", # Replace with user name
+                                person_name,
+                                st.session_state.network_company
+                            )
+                            st.code(req_msg, language="text")
+                        with tab2:
+                            email_msg = networking_agent.generate_cold_email(
+                                "My Resume Summary...", # Placeholder
+                                person_name,
+                                st.session_state.network_company,
+                                "Software Engineer"
+                            )
+                            st.code(email_msg, language="text")
+                    st.divider()
 
 
 
