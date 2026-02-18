@@ -1,0 +1,50 @@
+Manan Kumar
+# 04manank@gmail.com —  +91 8851173040 — ï LinkedIn — § GitHub — ù LeetCode
+Professional Summary
+Software Engineering student skilled in Full-Stack Development and Applied Machine Learning, with experience developing secure, scalable web applications and deploying production-ready ML models. Strong problem-solver with a solid
+foundation in algorithms, backend performance optimization, and data-driven analysis. Driven by curiosity, hands-on experimentation, and continuous learning across systems, data, and AI.
+Education
+B.Tech in Software Engineering — Delhi Technological University (DTU), New Delhi CGPA: 7.64 (2022–2026)
+Class XII (CBSE) — Sachdeva Public School Percentage: 88.8% (2022)
+Class X (CBSE) — Sachdeva Public School Percentage: 91.2% (2020)
+Projects
+InvestMate — AI-Powered Portfolio Tracker (Jun 2025 – Present) § 
+Tech Stack: React, Node.js, Express.js, MongoDB, JWT, Chart.js, Recharts, Gemini API, Tailwind CSS
+• Engineered a secure MERN web platform for 100+ users, implementing Google OAuth and JWT-based authentication.
+• Designed an optimized MongoDB schema enabling <70ms real-time portfolio updates.
+• Integrated 3+ live INR market APIs to track 1000+ stock and crypto assets in real time.
+• Leveraged Gemini API to generate AI-driven investment recommendations, improving decision clarity by ˜80%.
+• Visualized portfolio insights using Chart.js and Recharts (trendlines, P/L graphs, asset distribution).
+Crop Yield Prediction & Fertilizer Recommender (Apr 2025 – May 2025) § ³
+Tech Stack: Python, scikit-learn, NumPy, Pandas, Streamlit, Google Drive API (gdown)
+• Developed a regression model (R² = 0.91) to predict crop yield using soil, rainfall, and climate-based environmental
+features.
+• Implemented preprocessing and feature-encoding pipelines to produce clean, standardized model inputs.
+• Built an explainable rule-based fertilizer recommendation module providing practical advisory outputs.
+• Implemented and deployed an interactive Streamlit web app supporting real-time predictions and scenario testing.
+• Utilized Google Drive API (gdown) for lightweight cloud-based model storage and on-demand loading.
+Tour & Travel App UI (Jan 2025 – Feb 2025) §
+Tech Stack: React.js, HTML, CSS, Tailwind CSS
+• Designed a responsive React UI showcasing 30+ destinations with custom card components and modal interactions.
+• Achieved 90%+ Lighthouse performance and accessibility scores.
+• Built a mobile-first layout using responsive grid patterns for consistent experience across devices.
+Technical Skills
+Languages: C, C++, JavaScript, Python
+Frontend: React.js, Next.js, HTML5, CSS3, Tailwind CSS
+Backend: Node.js, Express.js, REST APIs, JWT Authentication
+Databases: MongoDB, MySQL, Firebase
+AI/ML: Machine Learning, Neural Networks, TensorFlow, Scikit-learn, Pandas, NumPy, Prompt Engineering, Model Deployment
+Tools: Git, GitHub, VS Code, Bootstrap, Generative AI, Power BI
+Core Subjects: DSA (C++), OOP, OS, DBMS, CN
+Core Skills: Software Development, Algorithmic Problem-Solving, Leadership, Team Collaboration
+Achievements & Certifications
+• Solved 400+ DSA problems; ranked in the Top 10% globally.
+• 1650+ LeetCode contest rating; ranked Top 20% globally.
+• Machine Learning Certification (Stanford & DeepLearning.AI) /
+• Prompting Essentials Certification (Google) /
+• Meta Full-Stack Developer Professional Certificate /
+• Attained AIR 15,233 in JEE Mains; scored 98 in Math and 94 in Physics.
+Leadership & Mentorship
+Desh Ke Mentor, Govt. of NCT Delhi (Jan 2024 – Apr 2024)
+• Mentored students (Grades 8–10), improving academic clarity and conceptual understanding by ˜30%.
+• Conducted 1-on-1 study planning, goal-setting, and structured learning guidance.
