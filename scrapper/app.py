@@ -723,17 +723,17 @@ def main():
                 
         st.markdown("---")
         st.markdown("### 📱 Notifications")
-        if st.button("🔔 Test Telegram Alert"):
+        if st.button("🔔 Test WhatsApp Alert"):
             try:
                 from scrapper.alert_bot import AlertBot
             except ImportError:
                 from alert_bot import AlertBot
             bot = AlertBot()
-            if bot.telegram_token and bot.telegram_chat_id:
+            if bot.whatsapp_phone and bot.whatsapp_api_key:
                 bot.send_high_score_alert("Test Role", "Test Company", 99, "https://example.com")
-                st.success("Test alert sent to Telegram! Check your phone.")
+                st.success("Test alert sent to WhatsApp! Check your phone.")
             else:
-                st.error("Missing token or chat_id in ai_config.json")
+                st.error("Missing whatsapp_phone or whatsapp_api_key in ai_config.json")
             
     # ========== TAB 2: MANUAL SEARCH ==========
     with tab2:
@@ -1052,7 +1052,10 @@ def main():
             if st.button("🚀 Search Big Tech", type="primary", use_container_width=True):
                 with st.spinner("Querying FAANG Direct Portals..."):
                     try:
-                        from scrapper.big_tech_scraper import BigTechScraper
+                        try:
+                            from scrapper.big_tech_scraper import BigTechScraper
+                        except ImportError:
+                            from big_tech_scraper import BigTechScraper
                         bt_scraper = BigTechScraper()
                         st.session_state.bt_results = bt_scraper.scrape_big_tech(bt_role, bt_location)
                     except Exception as e:
@@ -1086,8 +1089,12 @@ def main():
             if st.button("⚔️ Generate Battle Plan (PDF)", type="primary", use_container_width=True):
                 with st.spinner(f"Scouring Glassdoor/Reddit for {iw_company} {iw_role} questions..."):
                     try:
-                        from scrapper.interview_war_room import InterviewWarRoom
-                        from scrapper.resume_reader import get_master_resume
+                        try:
+                            from scrapper.interview_war_room import InterviewWarRoom
+                            from scrapper.resume_reader import get_master_resume
+                        except ImportError:
+                            from interview_war_room import InterviewWarRoom
+                            from resume_reader import get_master_resume
                         
                         resume = get_master_resume()
                         if resume.startswith("Resume not"):

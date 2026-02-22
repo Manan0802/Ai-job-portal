@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import urllib.parse
 
 class AlertBot:
     def __init__(self, config_path=None):
@@ -11,11 +12,11 @@ class AlertBot:
         with open(config_path, 'r') as f:
             self.config = json.load(f)
             
-        self.telegram_token = self.config.get('telegram_bot_token', '')
-        self.telegram_chat_id = self.config.get('telegram_chat_id', '')
+        self.whatsapp_phone = self.config.get('whatsapp_phone', '')
+        self.whatsapp_api_key = self.config.get('whatsapp_api_key', '')
 
     def send_high_score_alert(self, role, company, match_score, apply_link):
-        """Sends an alert for highly scored jobs."""
+        """Sends an alert for highly scored jobs over WhatsApp."""
         
         message = (
             f"🚨 TOP TIER MATCH 🚨\n\n"
@@ -26,22 +27,25 @@ class AlertBot:
             f"🚀 Dive into your Job Tracker Dashboard to generate your PDF resume!"
         )
 
-        # If true credentials exist, use the standard Telegram Bot API.
-        if self.telegram_token and self.telegram_chat_id:
-            url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
-            payload = {"chat_id": self.telegram_chat_id, "text": message}
+        encoded_message = urllib.parse.quote(message)
+
+        if self.whatsapp_phone and self.whatsapp_api_key:
+            url = f"https://api.callmebot.com/whatsapp.php?phone={self.whatsapp_phone}&text={encoded_message}&apikey={self.whatsapp_api_key}"
             try:
-                response = requests.post(url, json=payload)
+                response = requests.get(url)
                 if response.status_code == 200:
-                    print("   📱 Telegram alert sent successfully!")
+                    print("   📱 WhatsApp alert sent successfully!")
                     return True
+                else:
+                    print(f"   ⚠️ WhatsApp API Error: {response.text}")
             except Exception as e:
-                print(f"   ⚠️ Could not send Telegram alert: {e}")
+                print(f"   ⚠️ Could not send WhatsApp alert: {e}")
         else:
-            print(f"   📱 [MOCK ALERT NOT DUE TO MISSING KEYS in ai_config.json]:\n{message}")
+            print(f"   📱 [MOCK WHATSAPP ALERT NOT DEPLOYED DUE TO MISSING KEYS in ai_config.json]:\n{message}")
             
         return False
 
 if __name__ == "__main__":
     bot = AlertBot()
     bot.send_high_score_alert("Sr. Software Engineer", "Microsoft", 95, "https://careers.microsoft.com/fake")
+
