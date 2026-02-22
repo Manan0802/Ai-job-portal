@@ -25,135 +25,101 @@ st.set_page_config(
 # ========== CUSTOM CSS FOR DARK THEME ==========
 st.markdown("""
     <style>
-    /* Main background and text */
+    /* Global Font & Reset */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Main background - Deep Cyberpunk/GenZ Vibe */
     .stApp {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        background: #09090b;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+            radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
     }
     
-    /* Headers */
+    /* Headers with Gradient Text */
     h1, h2, h3 {
-        color: #00d4ff !important;
-        font-weight: 700 !important;
+        background: linear-gradient(90deg, #FF3BFF 0%, #ECBFBF 50%, #5C24FF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+        letter-spacing: -0.5px;
     }
     
-    /* Cards/Containers */
+    /* Modern Cards (Glassmorphism) */
     .job-card {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 15px 0;
-        border: 1px solid rgba(0, 212, 255, 0.3);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        background: rgba(24, 24, 27, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-right: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 24px;
+        padding: 24px;
+        backdrop-filter: blur(12px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     
     .job-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(0, 212, 255, 0.8);
-        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        transform: translateY(-4px) scale(1.01);
+        background: rgba(39, 39, 42, 0.8);
+        border-color: rgba(92, 36, 255, 0.5);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 20px rgba(92, 36, 255, 0.2);
     }
     
-    /* Priority badges */
-    .priority-high {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
-        font-size: 12px;
-    }
-    
-    .priority-normal {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
-        font-size: 12px;
-    }
-    
-    /* Category badges */
-    .category-national {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        color: #333;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 11px;
-        display: inline-block;
-    }
-    
-    .category-international {
-        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-        color: white;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 11px;
-        display: inline-block;
-    }
-    
-    /* Source badges */
-    .source-badge {
-        background: rgba(255, 255, 255, 0.1);
-        color: #00d4ff;
-        padding: 4px 10px;
-        border-radius: 10px;
-        font-size: 10px;
-        border: 1px solid rgba(0, 212, 255, 0.3);
-        display: inline-block;
-    }
-    
-    /* Apply button */
-    .apply-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 10px 25px;
-        border-radius: 25px;
-        text-decoration: none;
-        font-weight: bold;
-        display: inline-block;
-        transition: all 0.3s ease;
+    /* Buttons - Neo-Brutalism/Pop */
+    .stButton > button {
+        border-radius: 12px;
+        font-weight: 600;
         border: none;
-        cursor: pointer;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 14px;
     }
     
-    .apply-button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+        color: white;
     }
     
-    /* Sidebar styling */
-    .css-1d391kg {
-        background: rgba(0, 0, 0, 0.3);
+    .stButton > button[kind="secondary"] {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #e4e4e7;
     }
     
-    /* Metrics */
+    .stButton > button:hover {
+        transform: scale(1.02);
+    }
+
+    /* Badges */
     .metric-card {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid rgba(0, 212, 255, 0.3);
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
     }
     
-    /* Search box */
-    .stTextInput > div > div > input {
-        background: rgba(255, 255, 255, 0.05);
+    /* Input Fields */
+    .stTextInput > div > div > input, .stSelectbox > div > div > select, .stTextArea > div > div > textarea {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
         color: white;
-        border: 1px solid rgba(0, 212, 255, 0.3);
-        border-radius: 10px;
+        transition: border-color 0.2s;
     }
     
-    /* Select box */
-    .stSelectbox > div > div > select {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-        border: 1px solid rgba(0, 212, 255, 0.3);
-        border-radius: 10px;
+    .stTextInput > div > div > input:focus, .stSelectbox > div > div > select:focus {
+        border-color: #a855f7;
     }
     </style>
+
 """, unsafe_allow_html=True)
 
 # ========== DATA LOADING FUNCTIONS ==========
@@ -310,6 +276,30 @@ def load_applied_jobs():
     except Exception as e:
         return pd.DataFrame()
 
+@st.cache_data(ttl=60)
+def load_my_network():
+    """
+    Load network connections from My_Network sheet
+    """
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        credentials_file = os.path.join(script_dir, 'google_key.json')
+        if not os.path.exists(credentials_file): return pd.DataFrame()
+        
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open('Ai Job Tracker')
+        
+        try:
+            worksheet = sheet.worksheet('My_Network')
+            data = worksheet.get_all_records()
+            return pd.DataFrame(data) if data else pd.DataFrame()
+        except:
+            return pd.DataFrame()
+    except Exception as e:
+        return pd.DataFrame()
+
 def add_to_applied_jobs(job):
     """
     Add a job to the Applied_Jobs sheet in Google Sheets
@@ -344,16 +334,16 @@ def add_to_applied_jobs(job):
         # Prepare row data
         today = datetime.now().strftime('%Y-%m-%d')
         row_data = [
-            job.get('title', 'N/A'),
-            job.get('company', 'N/A'),
-            job.get('location', 'N/A'),
-            job.get('work_mode', job.get('Mode', 'Unknown')),
-            job.get('job_url', ''),
-            job.get('source', 'Unknown'),
-            job.get('salary_range', ''),
-            job.get('posted_date', ''),
-            job.get('Score', job.get('score', '')),
-            job.get('Summary', job.get('summary', '')),
+            str(job.get('title', 'N/A')),
+            str(job.get('company', 'N/A')),
+            str(job.get('location', 'N/A')),
+            str(job.get('work_mode', job.get('Mode', 'Unknown'))),
+            str(job.get('job_url', '')),
+            str(job.get('source', 'Unknown')),
+            str(job.get('salary_range', '')),
+            str(job.get('posted_date', '')),
+            str(job.get('Score', job.get('score', ''))),
+            str(job.get('Summary', job.get('summary', ''))),
             'Applied'  # Status
         ]
         
@@ -365,6 +355,32 @@ def add_to_applied_jobs(job):
         
         return True, "Job added successfully!"
         
+    except Exception as e:
+        return False, f"Error: {str(e)}"
+
+def add_to_network(person, company, linkedin_url):
+    """
+    Save a connection to My_Network Google Sheet
+    """
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        credentials_file = os.path.join(script_dir, 'google_key.json')
+        if not os.path.exists(credentials_file): return False, "No credentials"
+        
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open('Ai Job Tracker')
+        
+        try:
+            worksheet = sheet.worksheet('My_Network')
+        except:
+            worksheet = sheet.add_worksheet(title='My_Network', rows=1000, cols=5)
+            worksheet.append_row(['Name', 'Headline', 'Company', 'LinkedIn', 'Date_Added'])
+            
+        today = datetime.now().strftime('%Y-%m-%d')
+        worksheet.append_row([str(person.get('name', '')), str(person.get('headline', '')), str(company), str(linkedin_url), today])
+        return True, "Added to My Network"
     except Exception as e:
         return False, f"Error: {str(e)}"
 
@@ -571,274 +587,135 @@ def filter_jobs(df, role_search="", location_search="", remote_only=False):
 
 # ========== MAIN APP ==========
 def main():
-    # Header
+    # Header with animated gradient
     st.markdown("""
-        <h1 style="text-align: center; font-size: 3em; margin-bottom: 10px;">
-            🌍 Global Job Hunter Dashboard
-        </h1>
-        <p style="text-align: center; color: #aaa; font-size: 1.2em; margin-bottom: 30px;">
-            AI-Powered Job Matching System
-        </p>
+        <div style="text-align: center; padding: 20px 0;">
+            <h1 style="font-size: 4em; margin-bottom: 0;">
+                🚀 CAREER <span style="color: #a855f7">COMMAND</span> CENTER
+            </h1>
+            <p style="color: #a1a1aa; font-size: 1.2em; margin-top: 5px; margin-bottom: 40px; letter-spacing: 2px;">
+                AI-POWERED • AGENTIC • AUTOMATED
+            </p>
+        </div>
     """, unsafe_allow_html=True)
+
+    # ========== HORIZONTAL NAVIGATION ==========
+    # Using Tabs for cleaner horizontal layout
+    # tab_names = ["🤖 AI Headhunter", "🔍 Manual Hunt", "📝 Resume Tailor", "🤝 Networking God"]
+    # tab1, tab2, tab3, tab4 = st.tabs(tab_names)
     
+    # Custom CSS for tabs is already applied via style injection
+    
+    # Use option_menu-like styling with st.tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["🤖 AI Headhunter", "🔍 Manual Hunt", "📝 Resume Tailor", "🤝 Networking God"])
+
     # Load data
     df = load_data()
     
     # Clear any previous error states if we have data
     if not df.empty and 'show_error' in st.session_state:
         del st.session_state['show_error']
-    
-    # Don't return early - sidebar needs to render even when empty
-    # if df.empty:
-    #     st.error("No jobs available. Please run the job scraper first!")
-    #     return
-    
-    # Load applied jobs and filter them out
-    applied_jobs_df = load_applied_jobs()
-    
-    if not applied_jobs_df.empty and 'Link' in applied_jobs_df.columns:
-        # Get list of applied job URLs
-        applied_urls = applied_jobs_df['Link'].tolist()
         
-        # Filter out jobs that have already been applied to
-        original_count = len(df)
-        df = df[~df['job_url'].isin(applied_urls)]
-        filtered_count = original_count - len(df)
+    # Stats Bar (Horizontal) - Always visible
+    with st.container():
+        st.markdown("### 📊 Live Intel")
+        c1, c2, c3, c4 = st.columns(4)
+        total = len(df) if not df.empty else 0
         
-        if filtered_count > 0:
-            st.sidebar.info(f"🎯 Hiding {filtered_count} already applied jobs")
-    
-    # Filter out ignored jobs from current session
-    if 'ignored_jobs' in st.session_state and st.session_state.ignored_jobs:
-        ignored_count = len(df)
-        df = df[~df['job_url'].isin(st.session_state.ignored_jobs)]
-        ignored_count = ignored_count - len(df)
+        # Calculate high match safely
+        high_match = 0
+        if not df.empty and ('Score' in df.columns or 'score' in df.columns):
+             score_col = 'Score' if 'Score' in df.columns else 'score'
+             high_match = len(df[pd.to_numeric(df[score_col], errors='coerce') >= 80])
+             
+        applied_count = len(load_applied_jobs())
         
-        if ignored_count > 0:
-            st.sidebar.info(f"🚫 Hiding {ignored_count} ignored jobs (this session)")
-    
-    # Calculate stats (handle empty dataframe)
-    total_jobs = len(df) if not df.empty else 0
-    
-    # Calculate stats based on work_mode
-    remote_jobs = 0
-    onsite_jobs = 0
-    hybrid_jobs = 0
-    
-    if not df.empty:
-        if 'work_mode' in df.columns:
-            remote_jobs = len(df[df['work_mode'].str.lower() == 'remote'])
-            onsite_jobs = len(df[df['work_mode'].str.lower() == 'onsite'])
-            hybrid_jobs = len(df[df['work_mode'].str.lower() == 'hybrid'])
-        elif 'Mode' in df.columns:
-            remote_jobs = len(df[df['Mode'].str.lower() == 'remote'])
-            onsite_jobs = len(df[df['Mode'].str.lower() == 'onsite'])
-            hybrid_jobs = len(df[df['Mode'].str.lower() == 'hybrid'])
-    
-    # Calculate AI score stats
-    high_score_jobs = 0
-    if not df.empty and ('Score' in df.columns or 'score' in df.columns):
-        score_col = 'Score' if 'Score' in df.columns else 'score'
-        try:
-            df[score_col] = pd.to_numeric(df[score_col], errors='coerce')
-            high_score_jobs = len(df[df[score_col] >= 80])
-        except:
-            pass
-    
-    # Sidebar
-    st.sidebar.title("📊 Dashboard")
-    
-    # ========== MAIN NAVIGATION ==========
-    st.sidebar.subheader("🎯 Main Menu")
-    
-    # Main page selection
-    main_page = st.sidebar.radio(
-        "Select View",
-        ["🤖 AI Recommendations", "🔍 Manual Search", "📝 Resume Tailor", "🤝 Networking Engine"],
-        label_visibility="collapsed"
-    )
-    
-    st.sidebar.markdown("---")
-    
-    # ========== SYSTEM RECOMMENDATION BUTTON ==========
-    st.sidebar.subheader("🚀 Quick Actions")
-    
-    if st.sidebar.button("⚡ Run System Recommendation", type="primary", use_container_width=True):
-        # Clear any previous errors
-        if 'show_error' in st.session_state:
-            del st.session_state['show_error']
+        c1.metric("Total Jobs", total, delta="Live")
+        c2.metric("High Match", high_match, delta="Top 10%")
+        c3.metric("Applied", applied_count, delta="Tracked")
+        c4.metric("Status", "Online", delta_color="normal")
+        st.markdown("---")
+
+    # ========== TAB 1: AI HEADHUNTER ==========
+    with tab1:
+        st.subheader("🎯 AI Job Recommendations")
         
-        with st.spinner("🤖 Analyzing your resume and finding perfect matches... This may take 2-3 minutes..."):
-            try:
-                import subprocess
-                import sys
-                
-                # Run system recommendation script
-                script_dir = os.path.dirname(os.path.abspath(__file__))
-                rec_script = os.path.join(script_dir, 'system_recommendation.py')
-                
-                result = subprocess.run(
-                    [sys.executable, rec_script],
-                    capture_output=True,
-                    text=True,
-                    cwd=script_dir
+        col_act, col_filt = st.columns([1, 2])
+        
+        with col_act:
+            with st.form("scan_form"):
+                st.markdown("### ⚙️ Scan Settings")
+                scan_category = st.selectbox(
+                    "Target Category",
+                    ["Direct_Portals", "International_Remote", "Indian_Remote", "Indian_Onsite", "Career_Portals"]
                 )
+                scan_limit = st.slider("Jobs to Fetch", 5, 60, 20)
                 
-                if result.returncode == 0:
-                    st.success("✅ System Recommendation Complete!")
-                    st.balloons()
-                    st.info("📊 Jobs have been added to your Google Sheets. Refreshing dashboard...")
+                if st.form_submit_button("⚡ Run Targeted Scan", type="primary", use_container_width=True):
+                    # Clear any previous errors
+                    if 'show_error' in st.session_state:
+                        del st.session_state['show_error']
                     
-                    # Show summary from output
-                    if "Added" in result.stdout:
-                        # Extract the summary line
-                        for line in result.stdout.split('\n'):
-                            if 'Added' in line or 'Direct_Portals' in line or 'International_Remote' in line:
-                                st.text(line)
-                    
-                    # Clear cache to reload data
-                    st.cache_data.clear()
-                    time.sleep(2)
-                    st.rerun()
-                else:
-                    # Only show error if there's an actual error
-                    st.session_state['show_error'] = True
-                    st.error("❌ Error running recommendation engine")
-                    # Only show stderr if there's an actual error
-                    if result.stderr and "Error" in result.stderr:
-                        with st.expander("Error Details"):
-                            st.code(result.stderr)
-                    
-            except Exception as e:
-                st.session_state['show_error'] = True
-                st.error(f"❌ Error running recommendation: {e}")
-    
-    # Refresh Data button
-    if st.sidebar.button("🔄 Refresh Data", use_container_width=True):
-        st.cache_data.clear()
-        st.rerun()
-    
-    st.sidebar.markdown("---")
-    
-    # ========== SUB-NAVIGATION FOR AI RECOMMENDATIONS ==========
-    if main_page == "🤖 AI Recommendations":
-        st.sidebar.subheader("📂 Job Categories")
-        page = st.sidebar.selectbox(
-            "Select Category",
-            [
-                "All AI Recommendations", 
-                "Direct Portals", 
-                "International Remote", 
-                "Indian Remote", 
-                "Indian Onsite", 
-                "Career Portals"
-            ],
-            key="category_select_v3",
-            label_visibility="collapsed"
-        )
-    else:
-        page = main_page
-    
-    st.sidebar.markdown("---")
-    
-    # ========== METRICS (MIDDLE) ==========
-    st.sidebar.subheader("📈 Stats")
-    
-    st.sidebar.markdown(f"""
-    <div class="metric-card">
-        <h3 style="margin: 0; color: #00d4ff;">Total Jobs</h3>
-        <h2 style="margin: 5px 0; color: white;">{total_jobs}</h2>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        st.metric("🎯 High Score", high_score_jobs)
-    with col2:
-        st.metric("🏠 Remote", remote_jobs)
-    
-    col3, col4 = st.sidebar.columns(2)
-    with col3:
-        st.metric("🏢 Onsite", onsite_jobs)
-    with col4:
-        st.metric("🔄 Hybrid", hybrid_jobs)
-    
-    st.sidebar.markdown("---")
-    
-    # ========== FILTERS (BOTTOM) ==========
-    st.sidebar.subheader("🔧 Filters")
-    
-    # Score filter
-    if 'Score' in df.columns or 'score' in df.columns:
-        min_score = st.sidebar.slider("Minimum AI Score", 0, 100, 0, 10)
-    else:
-        min_score = 0
-    
-    # Work mode filter
-    work_mode_filter = st.sidebar.multiselect(
-        "Work Mode",
-        ["Remote", "Onsite", "Hybrid"],
-        default=["Remote", "Onsite", "Hybrid"]
-    )
-    
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(f"""
-    <p style="color: #888; font-size: 0.9em; text-align: center;">
-        Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
-    </p>
-    """, unsafe_allow_html=True)
-    
-    # Apply filters
-    filtered_df = df.copy()
-    
-    # Apply score filter
-    if min_score > 0 and ('Score' in df.columns or 'score' in df.columns):
-        score_col = 'Score' if 'Score' in df.columns else 'score'
-        filtered_df = filtered_df[pd.to_numeric(filtered_df[score_col], errors='coerce') >= min_score]
-    
-    # Apply work mode filter
-    if 'work_mode' in filtered_df.columns:
-        filtered_df = filtered_df[filtered_df['work_mode'].isin(work_mode_filter)]
-    elif 'Mode' in filtered_df.columns:
-        filtered_df = filtered_df[filtered_df['Mode'].isin(work_mode_filter)]
-    
-    # ========== PAGE: AI RECOMMENDATIONS (ALL) ==========
-    # BUG FIX: Legacy block disabled to prevent fallthrough when selectbox state is desynced
-    if False and page == "🌟 All AI Recommendations":
-        st.markdown("## 🤖 AI-Powered Recommendations")
-        st.markdown("*Top jobs based on AI matching scores across all categories*")
-        
-        # Sort by score
-        if 'Score' in filtered_df.columns or 'score' in filtered_df.columns:
-            score_col = 'Score' if 'Score' in filtered_df.columns else 'score'
-            filtered_df[score_col] = pd.to_numeric(filtered_df[score_col], errors='coerce')
-            recommended_jobs = filtered_df.sort_values(score_col, ascending=False).head(50)
+                    with st.spinner(f"🤖 AI Agent is scraping {scan_category} ({scan_limit} jobs)..."):
+                        try:
+                            import subprocess
+                            import sys
+                            
+                            # Run system recommendation script
+                            script_dir = os.path.dirname(os.path.abspath(__file__))
+                            rec_script = os.path.join(script_dir, 'system_recommendation.py')
+                            
+                            # Pass arguments
+                            cmd = [sys.executable, rec_script, "--category", scan_category, "--limit", str(scan_limit)]
+                            
+                            result = subprocess.run(
+                                cmd,
+                                capture_output=True,
+                                text=True,
+                                cwd=script_dir
+                            )
+                            
+                            if result.returncode == 0:
+                                st.success("✅ Scan Complete!")
+                                st.toast("Jobs added to Google Sheet!", icon="📊")
+                                st.balloons()
+                                time.sleep(1)
+                                st.cache_data.clear()
+                                st.rerun()
+                            else:
+                                st.error("❌ Error running recommendation engine")
+                                with st.expander("Error Details"):
+                                    st.code(result.stderr)
+                                    st.code(result.stdout)
+                                    
+                        except Exception as e:
+                            st.error(f"❌ Error: {e}")
+
+        with col_filt:
+            category_filter = st.selectbox(
+                "📂 Filter by Category",
+                [
+                    "All AI Recommendations", 
+                    "Direct Portals", 
+                    "International Remote", 
+                    "Indian Remote", 
+                    "Indian Onsite", 
+                    "Career Portals"
+                ],
+                label_visibility="collapsed"
+            )
+
+        # Show Jobs
+        if df.empty:
+            st.info("👋 No jobs found yet. Click 'Run Full Scan' to start your job hunt!")
         else:
-            recommended_jobs = filtered_df.head(50)
-        
-        if recommended_jobs.empty:
-            st.info("📭 No jobs to show yet!")
-            st.markdown("""
-            ### 🚀 Get Started:
-            1. Click **"⚡ Run System Recommendation"** in the sidebar
-            2. Wait 2-3 minutes while AI analyzes your resume and finds perfect jobs
-            3. Top 20 jobs (5 per category) will appear here!
+            if category_filter == "All AI Recommendations":
+                display_category_jobs(df, "All Jobs")
+            else:
+                display_category_jobs(df, category_filter)
             
-            **What happens when you click Run:**
-            - AI analyzes your master resume
-            - Scrapes 200-300 jobs from all platforms
-            - Scores each job against your profile
-            - Saves top 5 per category to Google Sheets
-            - Shows them here in the dashboard
-            """)
-        else:
-            st.markdown(f"### 🌟 Found {len(recommended_jobs)} recommended jobs")
-            
-            for idx, job in recommended_jobs.iterrows():
-                render_job_card(job, idx)
-    
-    # ========== PAGE: MANUAL SEARCH ==========
-    elif page == "🔍 Manual Search":
+    # ========== TAB 2: MANUAL SEARCH ==========
+    with tab2:
         st.markdown("## 🔍 Manual Job Search")
         st.markdown("*Search for fresh jobs using natural language*")
         
@@ -848,7 +725,7 @@ def main():
             "Describe the job you want",
             placeholder="e.g., Looking for tech jobs as fresher\nAI jobs for 1 year experience\nPython developer remote jobs",
             height=100,
-            help="Use plain language to describe what you're looking for"
+            label_visibility="collapsed"
         )
         
         # Filters in columns
@@ -857,15 +734,12 @@ def main():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            # Country selection
             country = st.selectbox(
                 "🌍 Country",
-                ["All Countries", "India", "USA", "Canada", "Australia", "Singapore", "Malaysia", "Europe"],
-                help="Select a specific country or leave as 'All Countries'"
+                ["All Countries", "India", "USA", "Canada", "Australia", "Singapore", "Malaysia", "Europe"]
             )
         
         with col2:
-            # Location selection (only for India)
             location = None
             if country == "India":
                 location = st.selectbox(
@@ -875,360 +749,103 @@ def main():
                 )
                 if location == "All Cities":
                     location = None
-            else:
-                st.info("Select India to choose specific cities")
         
         with col3:
-            # Work mode selection
             work_mode = st.multiselect(
                 "🏠 Work Mode",
                 ["Remote", "Hybrid", "Onsite"],
-                default=["Remote", "Hybrid", "Onsite"],
-                help="Select one or more work modes"
+                default=["Remote", "Hybrid", "Onsite"]
             )
-        
-        # AI Role Suggestions with Reasoning
-        st.markdown("### 💡 AI-Powered Role Suggestions")
-        
-        with st.expander("🤖 Click to see personalized role recommendations based on your resume", expanded=False):
-            try:
-                # Load resume and get AI suggestions
-                script_dir = os.path.dirname(os.path.abspath(__file__))
-                resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
-                
-                if os.path.exists(resume_path):
-                    with open(resume_path, 'r', encoding='utf-8') as f:
-                        resume_text = f.read()
-                    
-                    # Get AI role suggestions (cached to avoid repeated API calls)
-                    if 'ai_role_suggestions' not in st.session_state:
-                        with st.spinner("🤖 Analyzing your resume for best role matches..."):
-                            from openai import OpenAI
-                            import json
-                            
-                            # Load config
-                            config_file = os.path.join(script_dir, 'ai_config.json')
-                            with open(config_file, 'r') as f:
-                                config = json.load(f)
-                            
-                            client = OpenAI(
-                                base_url="https://openrouter.ai/api/v1",
-                                api_key=config['openrouter_key']
-                            )
-                            
-                            prompt = f"""Analyze this resume and suggest 5 best job roles with reasoning.
 
-Resume:
-{resume_text[:1500]}
-
-Return ONLY a JSON array:
-[
-    {{"role": "Role Name", "reason": "Why this role fits (1 sentence)"}},
-    ...
-]
-"""
-                            
-                            response = client.chat.completions.create(
-                                model=config['model'],
-                                messages=[
-                                    {"role": "system", "content": "You are a career advisor."},
-                                    {"role": "user", "content": prompt}
-                                ],
-                                temperature=0.3,
-                                max_tokens=500
-                            )
-                            
-                            ai_response = response.choices[0].message.content.strip()
-                            
-                            # Extract JSON
-                            if "```json" in ai_response:
-                                ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-                            elif "```" in ai_response:
-                                ai_response = ai_response.split("```")[1].split("```")[0].strip()
-                            
-                            suggestions = json.loads(ai_response)
-                            st.session_state.ai_role_suggestions = suggestions
-                    
-                    # Display suggestions
-                    suggestions = st.session_state.ai_role_suggestions
-                    
-                    for idx, suggestion in enumerate(suggestions):
-                        role = suggestion.get('role', 'Unknown Role')
-                        reason = suggestion.get('reason', 'No reason provided')
-                        
-                        col1, col2 = st.columns([3, 1])
-                        
-                        with col1:
-                            st.markdown(f"**{idx+1}. {role}**")
-                            st.caption(f"💡 {reason}")
-                        
-                        with col2:
-                            if st.button(f"Search", key=f"ai_role_{idx}", use_container_width=True):
-                                query = f"Looking for {role} positions"
-                                st.session_state.manual_search_query = query
-                                st.rerun()
-                        
-                        if idx < len(suggestions) - 1:
-                            st.markdown("---")
-                    
-                else:
-                    st.warning("Master resume not found. Using generic suggestions.")
-                    # Fallback to generic suggestions
-                    generic_roles = [
-                        "Software Engineer", "Full Stack Developer", "AI/ML Engineer",
-                        "Data Scientist", "Python Developer"
-                    ]
-                    for role in generic_roles:
-                        if st.button(f"🎯 {role}", key=f"gen_role_{role}", use_container_width=True):
-                            query = f"Looking for {role} positions"
-                            st.rerun()
-                    
-            except Exception as e:
-                st.error(f"Error getting AI suggestions: {e}")
-                # Fallback to generic
-                st.info("Using generic role suggestions")
-                generic_roles = [
-                    "Software Engineer", "Full Stack Developer", "AI/ML Engineer",
-                    "Data Scientist", "Python Developer"
-                ]
-                for role in generic_roles:
-                    if st.button(f"🎯 {role}", key=f"fallback_{role}", use_container_width=True):
-                        query = f"Looking for {role} positions"
-                        st.rerun()
-        
-        # Search button
         st.markdown("---")
         
-        col_search, col_clear = st.columns([3, 1])
-        
-        with col_search:
-            search_button = st.button("🚀 Search Jobs", type="primary", use_container_width=True)
-        
-        with col_clear:
-            if st.button("🔄 Clear", use_container_width=True):
-                st.session_state.manual_search_results = None
-                st.rerun()
-        
-        # Perform search
-        if search_button and query:
-            with st.spinner("🔍 Searching for jobs... This may take 30-60 seconds..."):
-                try:
-                    # Import manual search module
-                    from manual_search import scrape_jobs_by_query
-                    
-                    # Prepare parameters
-                    search_country = None if country == "All Countries" else country
-                    
-                    # Scrape jobs
-                    results_df = scrape_jobs_by_query(
-                        query=query,
-                        country=search_country,
-                        location=location,
-                        work_mode=work_mode if work_mode else None,
-                        results_wanted=50
-                    )
-                    
-                    # Store in session state
-                    st.session_state.manual_search_results = results_df
-                    
-                except Exception as e:
-                    st.error(f"❌ Error during search: {e}")
-                    st.session_state.manual_search_results = None
-        
+        if st.button("🚀 Search Jobs", type="primary", use_container_width=True):
+            if query:
+                with st.spinner("🔍 Searching for jobs..."):
+                    try:
+                        from manual_search import scrape_jobs_by_query
+                        search_country = None if country == "All Countries" else country
+                        
+                        results_df = scrape_jobs_by_query(
+                            query=query,
+                            country=search_country,
+                            location=location,
+                            work_mode=work_mode,
+                            results_wanted=50
+                        )
+                        st.session_state.manual_search_results = results_df
+                    except Exception as e:
+                        st.error(f"Search failed: {e}")
+
         # Display results
         if 'manual_search_results' in st.session_state and st.session_state.manual_search_results is not None:
-            results_df = st.session_state.manual_search_results
-            
-            if results_df.empty:
-                st.warning("😕 No jobs found matching your criteria. Try adjusting your search!")
-            else:
-                st.success(f"✅ Found {len(results_df)} fresh jobs!")
-                
-                # Sorting options
-                st.markdown("### 📊 Sort Results")
-                sort_option = st.selectbox(
-                    "Sort by",
-                    ["Most Recent", "Company (A-Z)", "Location"]
-                )
-                
-                # Apply sorting
-                if sort_option == "Most Recent" and 'posted_date' in results_df.columns:
-                    results_df = results_df.sort_values('posted_date', ascending=False)
-                elif sort_option == "Company (A-Z)" and 'company' in results_df.columns:
-                    results_df = results_df.sort_values('company')
-                elif sort_option == "Location" and 'location' in results_df.columns:
-                    results_df = results_df.sort_values('location')
-                
-                st.markdown("---")
-                st.info("💡 Click 'Apply' on any job to save it to your Applied_Jobs sheet")
-                st.markdown("---")
-                
-                # Display job cards
-                for idx, job in results_df.iterrows():
-                    render_job_card(job, idx)
-        elif query and not search_button:
-            st.info("👆 Click 'Search Jobs' to find opportunities!")
-    
-    # ========== CATEGORY PAGES ==========
-    elif "All AI Recommendations" in page:
-        st.markdown("## 🌟 All Recommended Jobs")
-        st.markdown("*Top AI-matched jobs across all categories*")
-        display_category_jobs(filtered_df, "All Jobs")
+             results_df = st.session_state.manual_search_results
+             if results_df.empty:
+                 st.warning("No jobs found.")
+             else:
+                 st.success(f"Found {len(results_df)} jobs!")
+                 
+                 # Fix for NaN values which are JSON-unfriendly for st.dataframe or subsequent processing
+                 results_df = results_df.fillna("") 
+                 st.session_state.manual_search_results = results_df # Update session state with clean DF
+                 
+                 # Render each job as a card so user can Apply
+                 for idx, job in results_df.iterrows():
+                     render_job_card(job, idx)
 
-    elif "Direct Portals" in page:
-        st.markdown("## 🌟 Direct Portals (ATS & Big Tech)")
-        st.markdown("*Jobs from Greenhouse, Lever, Google, Microsoft, etc.*")
-        display_category_jobs(filtered_df, "Direct Portals")
-    
-    elif "International Remote" in page:
-        st.markdown("## 🌍 International Remote Jobs")
-        st.markdown("*Remote jobs from around the world*")
-        display_category_jobs(filtered_df, "International Remote")
-    
-    elif "Indian Remote" in page:
-        st.markdown("## 🇮🇳 Indian Remote Jobs")
-        st.markdown("*Remote opportunities in India*")
-        display_category_jobs(filtered_df, "Indian Remote")
-    
-    elif "Indian Onsite" in page:
-        st.markdown("## 🏢 Indian Onsite Jobs")
-        st.markdown("*Onsite/Hybrid opportunities in India*")
-        display_category_jobs(filtered_df, "Indian Onsite")
-    
-    elif "Career Portals" in page:
-        st.markdown("## 💼 Career Portals")
-        st.markdown("*Jobs from company career pages*")
-        display_category_jobs(filtered_df, "Career Portals")
-    
-    # ========== PAGE: ALL JOBS ==========
-    elif page == "📋 All Jobs":
-        st.markdown("## 📋 All Jobs")
-        st.markdown("*Complete job listing with search*")
-        
-        # Search filters
-        col1, col2 = st.columns([2, 2])
-        
-        with col1:
-            role_search = st.text_input("🎯 Search by Role", placeholder="e.g., Python Developer, AI Engineer")
-        
-        with col2:
-            location_search = st.text_input("📍 Search by Location", placeholder="e.g., Remote, USA, India")
-        
-        st.markdown("---")
-        
-        # Apply search filters
-        search_results = filter_jobs(filtered_df, role_search, location_search, False)
-        
-        # Display results
-        if search_results.empty:
-            st.warning("No jobs match your search criteria. Try different filters!")
-        else:
-            st.markdown(f"### Found {len(search_results)} jobs")
-            
-            # Sort options
-            sort_by = st.selectbox(
-                "Sort by",
-                ["AI Score (High first)", "Date (Recent first)", "Company (A-Z)"]
-            )
-            
-            # Apply sorting
-            if sort_by == "AI Score (High first)" and ('Score' in search_results.columns or 'score' in search_results.columns):
-                score_col = 'Score' if 'Score' in search_results.columns else 'score'
-                search_results[score_col] = pd.to_numeric(search_results[score_col], errors='coerce')
-                search_results = search_results.sort_values(score_col, ascending=False, na_position='last')
-            elif sort_by == "Date (Recent first)" and 'posted_date' in search_results.columns:
-                search_results = search_results.sort_values('posted_date', ascending=False)
-            elif sort_by == "Company (A-Z)" and 'company' in search_results.columns:
-                search_results = search_results.sort_values('company')
-            
-            
-            for idx, job in search_results.iterrows():
-                render_job_card(job, idx)
-
-    # ========== PAGE: RESUME TAILOR ==========
-    elif page == "📝 Resume Tailor":
+    # ========== TAB 3: RESUME TAILOR ==========
+    with tab3:
         st.markdown("## 📝 Resume Tailor")
-        st.markdown("*Adapt your resume and cover letter for specific job roles.*")
+        st.markdown("*Adapt your resume for specific roles*")
         
-        # Load necessary data
         resume_tailor = ResumeTailor()
         
-        # Two columns: Job Selection & Resume Preview (future)
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            st.markdown("### 1️⃣ Job Description")
-            job_input_method = st.radio("Input Method", ["Paste JD Text", "Select from Database"], horizontal=True)
+            st.markdown("### 1️⃣ Job Details")
+            candidate_name = st.text_input("Your Name", "Manan Kumar")
+            job_description = st.text_area("Paste Job Description", height=200)
+            company_name = st.text_input("Company Name")
+            target_role = st.text_input("Target Role", "Software Engineer")
             
-            job_description = ""
-            company_name = "Target Company"
-            job_title = "Target Role"
-            
-            if job_input_method == "Select from Database":
-                if not df.empty:
-                    # Create a selection box with formatted strings
-                    job_options = [f"{row['company']} - {row['title']}" for _, row in df.iterrows()]
-                    selected_job_str = st.selectbox("Select a Job", job_options)
-                    
-                    if selected_job_str:
-                        # Find the selected row
-                        selected_row = df[df.apply(lambda row: f"{row['company']} - {row['title']}" == selected_job_str, axis=1)].iloc[0]
-                        job_description = str(selected_row.get('description', '')) 
-                        # If description is missing from sheet (which it usually is), warn user
-                        if not job_description or job_description == 'nan':
-                             st.warning("⚠️ Full Job Description not found in database. Please paste it below.")
-                             job_description = st.text_area("Job Description (Paste here)", height=200)
-                        else:
-                             st.success("✅ Job Description loaded!")
-                             with st.expander("View JD"):
-                                 st.write(job_description)
-                        
-                        company_name = selected_row['company']
-                        job_title = selected_row['title']
-                else:
-                    st.warning("No jobs in database.")
-            else:
-                company_name = st.text_input("Company Name", "Target Company")
-                job_title = st.text_input("Job Title", "Target Role")
-                job_description = st.text_area("Paste Job Description Here", height=300)
-
         with col2:
-            st.markdown("### 2️⃣ Analysis & Tailoring")
-            
-            if st.button("🚀 Analyze & Tailor Resume", type="primary", use_container_width=True):
-                if not job_description or len(job_description) < 50:
-                    st.error("Please provide a valid Job Description.")
-                else:
-                    with st.spinner("🤖 Analyzing gaps and generating suggestions..."):
-                        # Load master resume
-                        script_dir = os.path.dirname(os.path.abspath(__file__))
-                        resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
-                        
-                        if os.path.exists(resume_path):
-                            with open(resume_path, 'r', encoding='utf-8') as f:
-                                master_resume_text = f.read()
-                            
-                            # Run Analysis
-                            analysis_result = resume_tailor.analyze_gap(master_resume_text, job_description)
-                            
-                            # Save to session state to persist
-                            st.session_state.analysis_result = analysis_result
-                            st.session_state.target_company = company_name
-                            st.session_state.target_role = job_title
-                            st.session_state.master_resume_text = master_resume_text
-                            st.session_state.current_job_description = job_description
-                        else:
-                            st.error("Master resume not found in Assets folder.")
-            
-        # Display Results if available
+             st.markdown("### 2️⃣ Actions")
+             if st.button("🚀 Analyze & Tailor", type="primary", use_container_width=True):
+                 if job_description:
+                     with st.spinner("Analyzing & Parsing Master Resume..."):
+                         # Load resume (PDF or TXT)
+                         try:
+                             from scrapper.resume_reader import get_master_resume
+                             resume_text = get_master_resume()
+                             
+                             if resume_text:
+                                 # 1. Analyze Gap
+                                 analysis = resume_tailor.analyze_gap(resume_text, job_description)
+                                 
+                                 # 2. Parse Full Resume for PDF Generation
+                                 parsed_data = resume_tailor.parse_resume(resume_text)
+                                 
+                                 # Store in session
+                                 st.session_state.analysis_result = analysis
+                                 st.session_state.parsed_resume = parsed_data
+                                 
+                                 st.session_state.tailor_company = company_name
+                                 st.session_state.tailor_role = target_role
+                                 st.session_state.tailor_jd = job_description
+                                 st.session_state.tailor_resume_text = resume_text
+                             else:
+                                 st.error("Master resume (PDF or TXT) not found in Assets/!")
+                         except Exception as e:
+                             st.error(f"Error: {e}")
+        
         if 'analysis_result' in st.session_state:
-            result = st.session_state.analysis_result
-            
+            res = st.session_state.analysis_result
             st.divider()
             
             # Gap Analysis
             st.subheader("🔍 Gap Analysis")
-            missing = result.get('missing_keywords', [])
+            missing = res.get('missing_keywords', [])
             if missing:
                 st.write("**Missing Keywords identified:**")
                 st.markdown(" ".join([f"`{k}`" for k in missing]))
@@ -1237,9 +854,7 @@ Return ONLY a JSON array:
                 
             # Bullet Point Suggestions
             st.subheader("✍️ Suggested Improvements")
-            st.info("Select the changes you want to apply to your tailored resume.")
-            
-            suggestions = result.get('suggested_points', [])
+            suggestions = res.get('suggested_points', [])
             selected_points = []
             
             for i, point in enumerate(suggestions):
@@ -1261,120 +876,147 @@ Return ONLY a JSON array:
             
             with col_gen1:
                 if st.button("💾 Generate Tailored PDF", type="primary", use_container_width=True):
-                    # In a real scenario, we would parse the resume structure and replace.
-                    # For now, we created a simple PDF generator that takes a dict.
-                    # We will simulate "applying" checks by creating a dummy structure or 
-                    # prompting user that "Auto-replace is experimental".
-                    # Let's use the Master Resume text + Selected Points as a simple append for now
-                    # or better, reconstruct a simple dict structure.
-                    
-                    with st.spinner("Generating PDF..."):
-                        # Simple structure for demo (since we don't have a resume parser yet)
-                        resume_data = {
-                            "name": "Manan Kumar", # Replace with dynamic if possible
-                            "email": "manan@example.com",
-                            "summary": f"Aspiring {st.session_state.target_role} passionate about {st.session_state.target_company}.",
-                            "experience": [
-                                {
-                                    "title": "Relevant Project/Experience",
-                                    "points": selected_points if selected_points else ["No changes selected."]
-                                }
-                            ],
-                            "skills": str(missing) # Showing added skills
-                        }
+                    with st.spinner("Generating Professional PDF..."):
+                        # Get parsed base data
+                        final_resume_data = st.session_state.parsed_resume.copy()
                         
-                        pdf_path = f"Tailored_Resume_{st.session_state.target_company}.pdf"
-                        result_path = resume_tailor.create_pdf(resume_data, pdf_path)
+                        # Update with User Inputs
+                        if candidate_name:
+                            final_resume_data['name'] = candidate_name
                         
-                        if result_path:
-                            st.success(f"✅ PDF Generated: {result_path}")
+                        # Inject Tailored Points into the most relevant Experience (First one for now)
+                        if selected_points and final_resume_data.get('experience'):
+                            # Prepend tailored points to the latest experience
+                            current_points = final_resume_data['experience'][0].get('points', [])
+                            if isinstance(current_points, str): current_points = [current_points]
+                            
+                            # Add tailored points at the top
+                            final_resume_data['experience'][0]['points'] = selected_points + current_points
+                        
+                        # Add missing skills
+                        if missing and final_resume_data.get('skills'):
+                             current_skills = final_resume_data.get('skills', [])
+                             if isinstance(current_skills, str): 
+                                 current_skills = [s.strip() for s in current_skills.split(',')]
+                             
+                             final_resume_data['skills'] = list(set(current_skills + missing))
+                        
+                        # Generate Filename: Name_Company_Role.pdf
+                        safe_company = "".join(x for x in st.session_state.tailor_company if x.isalnum())
+                        safe_role = "".join(x for x in st.session_state.tailor_role if x.isalnum())
+                        pdf_filename = f"{candidate_name.split()[0]}_{safe_company}_{safe_role}.pdf"
+                        
+                        result_path = resume_tailor.create_pdf(final_resume_data, pdf_filename)
+                        
+                        if result_path and os.path.exists(result_path):
+                            st.success(f"✅ PDF Generated: {pdf_filename}")
                             with open(result_path, "rb") as pdf_file:
                                 st.download_button(
                                     label="Download Resume PDF",
                                     data=pdf_file,
-                                    file_name=pdf_path,
+                                    file_name=pdf_filename,
                                     mime="application/pdf"
                                 )
+                        else:
+                            st.error("Failed to generate PDF.")
             
             with col_gen2:
                 if st.button("✉️ Generate Cover Letter", use_container_width=True):
-                     with st.spinner("Drafting letter..."):
-                         cl_text = resume_tailor.generate_cover_letter(
-                             st.session_state.master_resume_text,
-                             st.session_state.current_job_description,
-                             st.session_state.target_company
-                         )
-                         st.session_state.cover_letter = cl_text
-            
-            if 'cover_letter' in st.session_state:
-                st.text_area("Cover Letter", st.session_state.cover_letter, height=300)
-                st.download_button("Download Cover Letter", st.session_state.cover_letter, f"Cover_Letter_{st.session_state.target_company}.txt")
+                    cl = resume_tailor.generate_cover_letter(
+                        st.session_state.tailor_resume_text,
+                        st.session_state.tailor_jd,
+                        st.session_state.tailor_company
+                    )
+                    st.text_area("Cover Letter", cl, height=300)
 
-
-    # ========== PAGE: NETWORKING ENGINE ==========
-    elif page == "🤝 Networking Engine":
-        st.markdown("## 🤝 Networking Engine")
-        st.markdown("*Find specific people and generate personalized outreach messages.*")
+    # ========== TAB 4: NETWORKING GOD ==========
+    with tab4:
+        st.markdown("## 🤝 Networking God")
+        st.markdown("*Find recruiters & alumni instantly*")
         
         networking_agent = NetworkingAgent()
         
-        col1, col2 = st.columns([1, 1])
+        net_tabs = st.tabs(["🔍 Search Contacts", "📖 My Network"])
         
-        with col1:
-             st.markdown("### 🎯 Target")
-             company_name = st.text_input("Target Company", placeholder="e.g. Google")
-             role_filter = st.selectbox("Who to find?", ["Recruiter", "University Recruiter", "Software Engineer", "Alumni (DTU)"])
-             
-        with col2:
-            st.markdown("### 🔍 Search")
-            if st.button("Find People", type="primary", use_container_width=True):
-                if company_name:
-                    with st.spinner(f"Searching for {role_filter}s at {company_name}..."):
-                        results = networking_agent.find_potential_contacts(company_name, role_filter)
-                        st.session_state.network_results = results
-                        st.session_state.network_company = company_name
-                else:
-                    st.error("Enter a company name.")
+        with net_tabs[0]:
+            c1, c2 = st.columns([2, 1])
+            with c1:
+                target_company = st.text_input("Target Company", placeholder="e.g. Google, Microsoft")
+            with c2:
+                user_linkedin = st.text_input("Your LinkedIn", placeholder="linkedin.com/in/you")
+                
+            if st.button("find_people.exe", type="primary", use_container_width=True):
+                if target_company:
+                    st.session_state.net_company = target_company
+                    st.session_state.net_results = {} # Reset results
                     
-        st.divider()
-        
-        if 'network_results' in st.session_state:
-            st.subheader(f"Found Contacts at {st.session_state.network_company}")
-            
-            results = st.session_state.network_results
-            if not results:
-                st.warning("No results found. Try a different role or company.")
-            
-            for i, person in enumerate(results):
-                with st.container():
-                    c1, c2 = st.columns([2, 1])
-                    with c1:
-                        st.markdown(f"**{person['name']}**")
-                        st.caption(person['headline'])
-                        st.markdown(f"[View Profile]({person['link']})")
-                    with c2:
-                        if st.button(f"Generate Message", key=f"net_msg_{i}"):
-                            st.session_state[f"msg_{i}"] = True
+                    # Categories to search
+                    categories = ["Recruiter", "Talent Acquisition", "Software Engineer", "Alumni"]
                     
-                    if st.session_state.get(f"msg_{i}"):
-                        person_name = person['name'] if person['name'] else "Recruiter"
-                        tab1, tab2 = st.tabs(["Connection Request", "Cold Email"])
-                        with tab1:
-                            req_msg = networking_agent.generate_connection_request(
-                                "Manan", # Replace with user name
-                                person_name,
-                                st.session_state.network_company
-                            )
-                            st.code(req_msg, language="text")
-                        with tab2:
-                            email_msg = networking_agent.generate_cold_email(
-                                "My Resume Summary...", # Placeholder
-                                person_name,
-                                st.session_state.network_company,
-                                "Software Engineer"
-                            )
-                            st.code(email_msg, language="text")
-                    st.divider()
+                    with st.spinner("🕵️ Scouring LinkedIn for contacts across all categories..."):
+                        progress_text = st.empty()
+                        for cat in categories:
+                            progress_text.text(f"Searching for {cat}s...")
+                            results = networking_agent.find_potential_contacts(target_company, cat)
+                            st.session_state.net_results[cat] = results
+                        progress_text.empty()
+                        
+            if 'net_results' in st.session_state and st.session_state.net_results:
+                st.markdown(f"### Results for {st.session_state.net_company}")
+                
+                # Create Tabs for each category
+                cat_tabs = st.tabs(["Recruiters", "Talent Acquisition", "Software Engineers", "Alumni"])
+                
+                categories = ["Recruiter", "Talent Acquisition", "Software Engineer", "Alumni"]
+                
+                for idx, cat in enumerate(categories):
+                    with cat_tabs[idx]:
+                        results = st.session_state.net_results.get(cat, [])
+                        if not results:
+                            st.info(f"No {cat}s found.")
+                        else:
+                            # Scrollable container for each tab
+                            with st.container(height=400):
+                                for i, p in enumerate(results):
+                                    key_suffix = f"{cat}_{i}"
+                                    num = i + 1
+                                    with st.expander(f"{num}. {p['name']} - {p['headline']}"):
+                                        st.write(f"**Profile:** [LinkedIn Profile]({p['link']})")
+                                        
+                                        col_a, col_b = st.columns(2)
+                                        
+                                        with col_a:
+                                            if st.button("👋 Connect Request", key=f"req_{key_suffix}"):
+                                                # Include LinkedIn in signature if provided
+                                                sender_name = f"Manan | {user_linkedin}" if user_linkedin else "Manan"
+                                                msg = networking_agent.generate_connection_request(
+                                                    sender_name, p['name'], st.session_state.net_company
+                                                )
+                                                st.text_area("Copy this:", msg, height=100, key=f"txt_req_{key_suffix}")
+                                                
+                                            if st.button("💾 Save to My Network", key=f"save_net_{key_suffix}"):
+                                                success, msg = add_to_network(p, st.session_state.net_company, p['link'])
+                                                if success:
+                                                    load_my_network.clear()
+                                                    st.success("✅ Saved to Google Sheet!")
+                                                else:
+                                                    st.error(msg)
+                                                
+                                        with col_b:
+                                            if st.button("📧 Cold Email Draft", key=f"email_{key_suffix}"):
+                                                msg = networking_agent.generate_cold_email(
+                                                    "Resume Summary", p['name'], st.session_state.net_company, "Software Engineer"
+                                                )
+                                                st.text_area("Email Draft:", msg, height=200, key=f"txt_email_{key_suffix}")
+                                                st.info("ℹ️ Copy this draft. Email addresses are private and cannot be scraped legally.")
+
+        with net_tabs[1]:
+            st.markdown("### 📖 My Saved Network")
+            net_df = load_my_network()
+            if net_df.empty:
+                st.info("No connections saved yet.")
+            else:
+                st.dataframe(net_df, use_container_width=True)
 
 
 

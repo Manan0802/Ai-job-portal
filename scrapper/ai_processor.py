@@ -23,15 +23,14 @@ def load_config():
 
 def load_resume():
     """Load the Master Resume from Assets folder"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Go up one level from scrapper to Ai-job, then into Assets
-    resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
-    
-    if not os.path.exists(resume_path):
-        raise FileNotFoundError(f"Resume not found at: {resume_path}")
-    
-    with open(resume_path, 'r', encoding='utf-8') as f:
-        return f.read()
+    try:
+        from resume_reader import get_master_resume
+    except ImportError:
+        from scrapper.resume_reader import get_master_resume
+    resume_text = get_master_resume()
+    if resume_text.startswith("Resume not"):
+        raise FileNotFoundError(resume_text)
+    return resume_text
 
 # Load configuration and resume
 config = load_config()

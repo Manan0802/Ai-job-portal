@@ -32,14 +32,14 @@ def load_config():
 
 def load_resume():
     """Load the Master Resume"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
-    
-    if not os.path.exists(resume_path):
-        raise FileNotFoundError(f"Resume not found at: {resume_path}")
-    
-    with open(resume_path, 'r', encoding='utf-8') as f:
-        return f.read()
+    try:
+        from resume_reader import get_master_resume
+    except ImportError:
+        from scrapper.resume_reader import get_master_resume
+    text = get_master_resume()
+    if text.startswith("Resume not"):
+        raise FileNotFoundError(text)
+    return text
 
 # Global variables
 config = None

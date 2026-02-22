@@ -60,7 +60,8 @@ class ResumeTailor:
                     {"role": "system", "content": "You are an expert ATS Resume Optimizer."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=1500
             )
             
             content = response.choices[0].message.content.strip()
@@ -71,7 +72,18 @@ class ResumeTailor:
                 
             return json.loads(content)
         except Exception as e:
-            return {"error": str(e)}
+            # Fallback: Return original resume content wrapped in expected structure
+            print(f"Error in gap analysis: {e}")
+            return {
+                "missing_keywords": ["Error analyzing resume - check quotas or connection"],
+                "suggested_points": [
+                    {
+                        "original": "Resume Analysis Failed",
+                        "new": "Could not analyze resume. Please try again or manually edit.",
+                        "reason": f"System error: {str(e)[:50]}..."
+                    }
+                ]
+            }
 
     def generate_cover_letter(self, resume_text, job_description, company_name):
         """
@@ -103,69 +115,181 @@ class ResumeTailor:
                     {"role": "system", "content": "You are a professional career coach."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7
+                temperature=0.7,
+                max_tokens=1000
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             return f"Error generating cover letter: {str(e)}"
-
-    def create_pdf(self, content_dict, filename):
+            
+    def parse_resume(self, resume_text):
         """
-        Create a professional PDF resume using FPDF2
-        content_dict: {'name': '...', 'email': '...', 'summary': '...', 'experience': [...], 'projects': [...], 'skills': '...'}
+        Parse raw resume text into structured JSON using AI
         """
-        pdf = FPDF()
-        pdf.add_page()
+        prompt = f"""
+        You are an expert resume parser. Convert the following resume text into a structured JSON format.
         
-        # Header
-        pdf.set_font("Helvetica", "B", 24)
-        pdf.cell(0, 10, content_dict.get('name', 'Candidate Name'), new_x="LMARGIN", new_y="NEXT", align="C")
+        RESUME TEXT:
+        {resume_text[:4000]}
         
-        pdf.set_font("Helvetica", "", 10)
-        contact_info = f"{content_dict.get('email', '')} | {content_dict.get('phone', '')} | {content_dict.get('linkedin', '')}"
-        pdf.cell(0, 5, contact_info, new_x="LMARGIN", new_y="NEXT", align="C")
+        Return ONLY valid JSON with this exact structure:
+        {{
+            "name": "Candidate Name",
+            "email": "email@example.com",
+            "phone": "123-456-7890",
+            "linkedin": "linkedin.com/in/...",
+            "summary": "Professional summary...",
+            "skills": ["Skill1", "Skill2", ...],
+            "experience": [
+                {{
+                    "title": "Role - Company",
+                    "subtitle": "Date",
+                    "points": ["Bullet 1", "Bullet 2"]
+                }}
+            ],
+            "education": [
+                {{
+                    "title": "Degree - University",
+                    "subtitle": "Year",
+                    "points": []
+                }}
+            ],
+            "projects": [
+                {{
+                    "title": "Project Name",
+                    "subtitle": "Tech Stack",
+                    "points": ["Description bullet"]
+                }}
+            ]
+        }}
+        """
         
-        pdf.ln(5)
-        
-        # Sections
-        sections = ['summary', 'experience', 'projects', 'education', 'skills']
-        
-        for section in sections:
-            if section in content_dict and content_dict[section]:
-                # Section Header
-                pdf.set_font("Helvetica", "B", 12)
-                pdf.set_fill_color(240, 240, 240)
-                pdf.cell(0, 8, section.upper(), new_x="LMARGIN", new_y="NEXT", fill=True)
-                pdf.ln(2)
-                
-                # Content
-                pdf.set_font("Helvetica", "", 10)
-                
-                if isinstance(content_dict[section], list):
-                    for item in content_dict[section]:
-                        # Item Title (e.g., Job Title, Project Name)
-                        if 'title' in item:
-                            pdf.set_font("Helvetica", "B", 10)
-                            pdf.cell(0, 5, item['title'], new_x="LMARGIN", new_y="NEXT")
-                        
-                        # Subtitle (e.g., Company, Date)
-                        if 'subtitle' in item:
-                            pdf.set_font("Helvetica", "I", 9)
-                            pdf.cell(0, 5, item['subtitle'], new_x="LMARGIN", new_y="NEXT")
-                        
-                        # Bullet points
-                        pdf.set_font("Helvetica", "", 10)
-                        if 'points' in item:
-                            for point in item['points']:
-                                pdf.multi_cell(0, 5, f"- {point}")
-                        pdf.ln(2)
-                else:
-                    pdf.multi_cell(0, 5, content_dict[section])
-                    pdf.ln(3)
-                    
         try:
-            pdf.output(filename)
-            return filename
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1
+            )
+            content = response.choices[0].message.content.strip()
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+            
+            return json.loads(content)
         except Exception as e:
+            print(f"Error parsing resume: {e}")
+            return {}
+
+    def create_pdf(self, content_dict, filename="Tailored_Resume.pdf"):
+        """
+        Create a professional PDF using FPDF2
+        """
+        try:
+            # Ensure Resumes directory exists
+            output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Resumes')
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Clean filename
+            safe_filename = "".join([c for c in filename if c.isalpha() or c.isdigit() or c in (' ', '-', '_', '.')]).rstrip()
+            if not safe_filename.endswith('.pdf'):
+                safe_filename += '.pdf'
+                
+            full_path = os.path.join(output_dir, safe_filename)
+
+            pdf = FPDF()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.add_page()
+            
+            # --- HEADER ---
+            pdf.set_font("Helvetica", "B", 24)
+            pdf.cell(0, 10, content_dict.get('name', 'Candidate'), new_x="LMARGIN", new_y="NEXT", align="C")
+            
+            pdf.set_font("Helvetica", "", 10)
+            contact = f"{content_dict.get('email', '')} | {content_dict.get('phone', '')} | {content_dict.get('linkedin', '')}".strip(' |')
+            pdf.cell(0, 5, contact, new_x="LMARGIN", new_y="NEXT", align="C")
+            pdf.ln(5)
+            
+            # --- SECTIONS ---
+            def section_header(label):
+                pdf.set_font("Helvetica", "B", 12)
+                pdf.set_fill_color(230, 230, 230)
+                pdf.cell(0, 6, label.upper(), fill=True, new_x="LMARGIN", new_y="NEXT", align="L")
+                pdf.ln(2)
+
+            # SUMMARY
+            if content_dict.get('summary'):
+                section_header("Summary")
+                pdf.set_font("Helvetica", "", 10)
+                pdf.multi_cell(0, 5, content_dict['summary'])
+                pdf.ln(3)
+
+            # SKILLS
+            if content_dict.get('skills'):
+                section_header("Technical Skills")
+                pdf.set_font("Helvetica", "", 10)
+                skills = ", ".join(content_dict['skills']) if isinstance(content_dict['skills'], list) else str(content_dict['skills'])
+                pdf.multi_cell(0, 5, skills)
+                pdf.ln(3)
+
+            # EXPERIENCE
+            if content_dict.get('experience'):
+                section_header("Experience")
+                for item in content_dict['experience']:
+                    pdf.set_font("Helvetica", "B", 10)
+                    pdf.cell(0, 5, item.get('title', ''), new_x="LMARGIN", new_y="NEXT")
+                    
+                    if item.get('subtitle'):
+                        pdf.set_font("Helvetica", "I", 9)
+                        pdf.cell(0, 5, item['subtitle'], new_x="LMARGIN", new_y="NEXT")
+                    
+                    # Bullets
+                    pdf.set_font("Helvetica", "", 10)
+                    points = item.get('points', [])
+                    if isinstance(points, str): points = [points]
+                    
+                    for point in points:
+                        # Sanitize text
+                        clean_point = point.encode('latin-1', 'replace').decode('latin-1')
+                        pdf.set_x(15) 
+                        pdf.multi_cell(0, 5, f"- {clean_point}")
+                    pdf.ln(2)
+
+            # PROJECTS
+            if content_dict.get('projects'):
+                section_header("Projects")
+                for item in content_dict['projects']:
+                    pdf.set_font("Helvetica", "B", 10)
+                    pdf.cell(0, 5, item.get('title', ''), new_x="LMARGIN", new_y="NEXT")
+                    
+                    if item.get('subtitle'):
+                        pdf.set_font("Helvetica", "I", 9)
+                        pdf.cell(0, 5, item['subtitle'], new_x="LMARGIN", new_y="NEXT")
+                    
+                    pdf.set_font("Helvetica", "", 10)
+                    points = item.get('points', [])
+                    if isinstance(points, str): points = [points]
+                    for point in points:
+                        clean_point = point.encode('latin-1', 'replace').decode('latin-1')
+                        pdf.set_x(15)
+                        pdf.multi_cell(0, 5, f"- {clean_point}")
+                    pdf.ln(2)
+
+            # EDUCATION
+            if content_dict.get('education'):
+                section_header("Education")
+                for item in content_dict['education']:
+                    pdf.set_font("Helvetica", "B", 10)
+                    pdf.cell(0, 5, item.get('title', ''), new_x="LMARGIN", new_y="NEXT")
+                    if item.get('subtitle'):
+                        pdf.set_font("Helvetica", "I", 9)
+                        pdf.cell(0, 5, item['subtitle'], new_x="LMARGIN", new_y="NEXT")
+                    pdf.ln(2)
+
+            pdf.output(full_path)
+            return full_path
+            
+        except Exception as e:
+            print(f"Error saving PDF: {e}")
             return None
 

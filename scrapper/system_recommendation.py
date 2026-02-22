@@ -13,6 +13,10 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from openai import OpenAI
 import time
+try:
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader = None
 
 # ========== CONFIGURATION ==========
 
@@ -25,15 +29,15 @@ def load_config():
         return json.load(f)
 
 def load_resume():
-    """Load the Master Resume"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    resume_path = os.path.join(os.path.dirname(script_dir), 'Assets', 'master resume.txt')
-    
-    if not os.path.exists(resume_path):
-        raise FileNotFoundError(f"Resume not found at: {resume_path}")
-    
-    with open(resume_path, 'r', encoding='utf-8') as f:
-        return f.read()
+    """Load the Master Resume (PDF or TXT)"""
+    try:
+        from resume_reader import get_master_resume
+    except ImportError:
+        from scrapper.resume_reader import get_master_resume
+    text = get_master_resume()
+    if text.startswith("Resume not"):
+        raise FileNotFoundError(text)
+    return text
 
 # Configuration will be loaded when needed
 config = None
@@ -65,21 +69,109 @@ def analyze_resume_for_roles():
     """
     print("\n🤖 Analyzing master resume...")
     
-    prompt = f"""Analyze this resume and extract:
-1. Top 5 job roles this person should apply for
-2. Key skills to search for
-3. Preferred locations (if mentioned)
-
-Resume:
-{MASTER_RESUME}
-
-Return ONLY a JSON object:
-{{
-    "roles": ["role1", "role2", ...],
-    "skills": ["skill1", "skill2", ...],
-    "locations": ["location1", "location2", ...]
-}}
+    prompt = f"""Analyze this resume and extract key career details.
+    
+    Resume:
+    {MASTER_RESUME[:3000]}
+    
+    Extract the following:
+    1. **Experience Level**: Determine if candidates is "Fresher", "Intern", "Junior" (1-3 yrs), or "Senior".
+    2. **Top 5 Job Roles**: Specific roles they are best fit for (e.g., "Python Intern", "Junior Backend Engineer").
+       - If they are a student/fresher, append "Intern" or "Fresher" to roles.
+    3. **Key 5 Skills**: The most important technical skills from the resume.
+    4. **Preferred Locations**: Extract locations if mentioned, else default to ["India", "Remote"].
+    
+    Return ONLY a JSON object:
+    {{
+        "experience_level": "Fresher/Intern/Junior/Senior",
+        "roles": ["role1", "role2", ...],
+        "skills": ["skill1", "skill2", ...],
+        "locations": ["location1", "location2", ...]
+    }}
 """
+    
+def load_resume():
+    """Load resume content from Assets folder (TXT or PDF)"""
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        assets_dir = os.path.join(os.path.dirname(script_dir), 'Assets')
+        
+        # Priority 1: PDF
+        pdf_path = os.path.join(assets_dir, 'master resume.pdf')
+        if os.path.exists(pdf_path):
+            try:
+                import pypdf
+                with open(pdf_path, 'rb') as f:
+                    reader = pypdf.PdfReader(f)
+                    text = ""
+                    for page in reader.pages:
+                        text += page.extract_text() + "\n"
+                print(f"📄 Loaded Master Resume (PDF)")
+                return text.strip()
+            except ImportError:
+                print("⚠️ pypdf not installed. Falling back to TXT.")
+            except Exception as e:
+                print(f"⚠️ Error reading PDF: {e}")
+
+        # Priority 2: TXT
+        txt_path = os.path.join(assets_dir, 'master resume.txt')
+        if os.path.exists(txt_path):
+            with open(txt_path, 'r', encoding='utf-8') as f:
+                print(f"📄 Loaded Master Resume (TXT)")
+                return f.read().strip()
+                
+        # Priority 3: Any PDF in Assets
+        for file in os.listdir(assets_dir):
+            if file.endswith('.pdf'):
+                try:
+                    import pypdf
+                    full_path = os.path.join(assets_dir, file)
+                    with open(full_path, 'rb') as f:
+                        reader = pypdf.PdfReader(f)
+                        text = ""
+                        for page in reader.pages:
+                            text += page.extract_text() + "\n"
+                    print(f"📄 Loaded Resume: {file}")
+                    return text.strip()
+                except:
+                    continue
+        
+        print("❌ No resume found in Assets/")
+        return ""
+    except Exception as e:
+        print(f"❌ Error loading resume: {e}")
+        return ""
+
+def analyze_resume_for_roles():
+    """
+    Analyze the master resume to identify role matches
+    """
+    resume_text = load_resume()
+    if not resume_text:
+        return {
+             "roles": ["Software Engineer", "Full Stack Developer"],
+             "skills": ["Python", "JavaScript"],
+             "experience_level": "Fresher"
+        }
+    
+    prompt = f"""
+    Analyze this candidate's resume extensively and logically. Your goal is to extract their true experience level, top skills, certifications, and ideal job roles.
+
+    RESUME:
+    {resume_text[:4000]}
+    
+    CRITICAL INSTRUCTION:
+    - Base the 'experience_level' strictly on their work history.
+    - Base the 'roles' explicitly on their proven skills and certifications (e.g., if they have AI certs, include "AI Engineer").
+    
+    Return ONLY a JSON object:
+    {{
+        "experience_level": "Fresher/Intern/Junior/Senior",
+        "roles": ["role1", "role2", ...],
+        "skills": ["skill1", "skill2", ...],
+        "locations": ["location1", "location2", ...]
+    }}
+    """
     
     try:
         response = client.chat.completions.create(
@@ -89,7 +181,7 @@ Return ONLY a JSON object:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=500
+            max_tokens=600
         )
         
         ai_response = response.choices[0].message.content.strip()
@@ -109,18 +201,18 @@ Return ONLY a JSON object:
         
     except Exception as e:
         print(f"   ⚠️ Error analyzing resume: {e}")
-        # Fallback to default
         return {
             "roles": ["Software Engineer", "Full Stack Developer", "Python Developer"],
             "skills": ["Python", "React", "Node.js", "Machine Learning"],
-            "locations": ["India", "Remote", "USA"]
+            "locations": ["India", "Remote", "USA"],
+            "experience_level": "Fresher"
         }
 
 def score_job_match(job_title, company, description):
     """
     Score a job against the master resume (0-100)
     """
-    prompt = f"""Score this job against the candidate's resume (0-100).
+    prompt = f"""Score this job against the candidate's resume (0-100) strictly and logically.
 
 Resume:
 {MASTER_RESUME[:1500]}
@@ -130,8 +222,13 @@ Job:
 - Company: {company}
 - Description: {description[:500]}
 
+RULES:
+1. Pure Logic: Base the score purely on how well the job description matches their experience level, technical skills, and certifications.
+2. If the candidate is a Fresher/Intern and the job asks for 5 years experience, penalize heavily (Score < 30).
+3. If the candidate has explicit certifications/projects validating the job requirements, boost the score (85-100).
+
 Return ONLY a JSON:
-{{"score": <number>, "reason": "<1 sentence why>"}}
+{{"score": <number>, "reason": "<1 logical sentence why>"}}
 """
     
     try:
@@ -142,7 +239,7 @@ Return ONLY a JSON:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=150
+            max_tokens=1000
         )
         
         ai_response = response.choices[0].message.content.strip()
@@ -165,7 +262,7 @@ Return ONLY a JSON:
 
 # ========== JOB SCRAPING ==========
 
-def scrape_jobs_by_category(roles, locations):
+def scrape_jobs_by_category(roles, locations, skills=[], experience_level="Fresher", target_category=None):
     """
     Scrape jobs from ALL platforms using enhanced scraper
     Returns: {category: [jobs]}
@@ -186,15 +283,28 @@ def scrape_jobs_by_category(roles, locations):
         GREENHOUSE_COMPANIES, LEVER_COMPANIES
     )
     
-    # Get top role
+    # Construct optimized search query
     top_role = roles[0] if roles else "Software Engineer"
     top_location = locations[0] if locations else "Remote"
     
-    print(f"\n🎯 Primary Search: {top_role} in {top_location}")
+    # Remove overly specific appending which breaks JobSpy search
+    search_query = top_role
+            
+    # Override location based on target_category to guarantee relevant jobs
+    if target_category:
+        if "Indian" in target_category:
+            top_location = "India"
+            if "Remote" in target_category:
+                search_query += " Remote"
+        elif "International_Remote" in target_category:
+            top_location = "Remote"
+            
+    print(f"\n🎯 Primary Search: '{search_query}' in '{top_location}' (Level: {experience_level})")
     
     # 1. JobSpy (LinkedIn, Indeed, Glassdoor) - Most recent first
     print("\n📱 Scraping JobSpy sources...")
-    jobspy_jobs = scrape_jobspy(top_role, top_location, results_wanted=30)
+    # Increase results explicitly
+    jobspy_jobs = scrape_jobspy(search_query, top_location, results_wanted=50)
     
     # 2. We Work Remotely
     print("\n🌍 Scraping We Work Remotely...")
@@ -230,9 +340,14 @@ def scrape_jobs_by_category(roles, locations):
         location_str = str(job.get('location', '')).lower()
         desc_str = str(job.get('description', ''))[:200].lower()
         
-        # Determine category
-        if 'remote' in location_str or 'remote' in desc_str or job.get('source') in ['WeWorkRemotely', 'Remotive']:
-            if 'india' not in location_str:
+        # Determine category using robust location matching
+        indian_keywords = ['india', 'mumbai', 'delhi', 'bangalore', 'bengaluru', 'hyderabad', 
+                          'chennai', 'pune', 'kolkata', 'ahmedabad', 'gurgaon', 'noida',
+                          'chandigarh', 'jaipur', 'kochi', 'indore', 'bhopal', 'lucknow']
+        is_india_loc = any(k in location_str for k in indian_keywords)
+        
+        if 'remote' in location_str or 'remote' in desc_str or str(job.get('source')) in ['WeWorkRemotely', 'Remotive']:
+            if not is_india_loc:
                 category = 'International'
             else:
                 category = 'Remote'
@@ -247,75 +362,146 @@ def scrape_jobs_by_category(roles, locations):
     
     # Print category breakdown
     print("\n📊 Category Breakdown:")
-    for category, jobs in all_jobs.items():
-        print(f"   - {category}: {len(jobs)} jobs")
+    for category, cat_jobs in all_jobs.items():
+        print(f"   - {category}: {len(cat_jobs)} jobs")
     
-    return all_jobs
+    return combined_jobs
 
 # ========== RECOMMENDATION ENGINE ==========
 
-def run_system_recommendation():
+def run_system_recommendation(target_category=None, limit=10):
     """
     Main recommendation engine
     1. Analyze resume
-    2. Scrape jobs
+    2. Scrape jobs (Targeted if category provided)
     3. Score jobs
-    4. Select top 5 per category
+    4. Select top jobs
     5. Save to Google Sheets
     """
     # Initialize configuration and AI client
     initialize()
     
     print("="*70)
-    print("[SYSTEM] RECOMMENDATION ENGINE")
+    print(f"[SYSTEM] RECOMMENDATION ENGINE | Target: {target_category or 'ALL'} | Limit: {limit}")
     print("="*70)
     
     # Step 1: Analyze resume
     analysis = analyze_resume_for_roles()
     roles = analysis.get('roles', [])
     locations = analysis.get('locations', ['Remote', 'India'])
+    skills = analysis.get('skills', [])
+    experience_level = analysis.get('experience_level', 'Fresher')
     
-    print(f"\n[INFO] Target Roles: {', '.join(roles[:3])}")
-    print(f"[INFO] Target Locations: {', '.join(locations[:3])}")
+    print(f"\n[INFO] Experience Level: {experience_level}")
+    print(f"[INFO] Target Roles: {', '.join(roles[:3])}")
     
-    # Step 2: Scrape jobs
-    categorized_jobs = scrape_jobs_by_category(roles, locations)
+    # Category Mapping
+    all_categories = {
+        "Direct_Portals": ["Greenhouse", "Lever", "Workday"],
+        "International_Remote": ["Worldwide Remote", "US Remote", "Europe Remote"],
+        "Indian_Remote": ["India Remote", "Bangalore Remote"],
+        "Indian_Onsite": ["Bangalore", "Hyderabad", "Gurgaon", "Mumbai", "Pune", "Noida", "Chennai"],
+        "Career_Portals": ["Google", "Microsoft", "Amazon", "Meta"]
+    }
     
-    # Step 3: Score and filter top 5 per category
-    print("\n[AI] Scoring jobs with AI...")
+    # Filter categories if target is provided
+    selected_cats = {}
+    if target_category:
+        # Normalize key (handle spaces vs underscores)
+        norm_target = target_category.replace(" ", "_")
+        # Try exact match or partial match
+        for key in all_categories:
+            if norm_target.lower() == key.lower():
+                selected_cats = {key: all_categories[key]}
+                break
+        if not selected_cats:
+            print(f"⚠️ Category '{target_category}' not found. Defaulting to ALL.")
+            selected_cats = all_categories
+    else:
+        selected_cats = all_categories
+
+    print(f"\n🔍 Starting Scan for: {list(selected_cats.keys())}")
     
     final_recommendations = []
+
+    print(f"\n📂 Starting Global Scrape based on Resume")
+    # Step 2: Scrape jobs matching candidate roles
+    all_combined_jobs = scrape_jobs_by_category(roles, locations, skills, experience_level, target_category)
     
-    for category, jobs in categorized_jobs.items():
-        print(f"\n[CATEGORY] {category} ({len(jobs)} jobs found)")
+    if not all_combined_jobs:
+        print(f"   [WARN] No jobs found from scrape!")
+    else:
+        # Filter jobs matching the specific selected categories
+        filtered_jobs = []
+        for job in all_combined_jobs:
+            location_str = str(job.get('location', '')).lower()
+            work_mode = job.get('work_mode', 'Onsite')
+            source_str = str(job.get('source', '')).lower()
+            
+            # Check if from direct portals
+            direct_portal_sources = ['Greenhouse', 'Lever', 'Google', 'Microsoft', 'Apple', 'Amazon', 'Meta', 'Netflix']
+            direct_portal_urls = ['greenhouse.io', 'lever.co', 'google.com/careers', 'microsoft.com/careers']
+            
+            is_direct = (
+                job.get('source') in direct_portal_sources or
+                any(url_pattern in job.get('job_url', '').lower() for url_pattern in direct_portal_urls)
+            )
+            
+            # Check if location is in India using keywords
+            indian_keywords = ['india', 'mumbai', 'delhi', 'bangalore', 'bengaluru', 'hyderabad', 
+                              'chennai', 'pune', 'kolkata', 'ahmedabad', 'gurgaon', 'noida',
+                              'chandigarh', 'jaipur', 'kochi', 'indore', 'bhopal', 'lucknow']
+            
+            is_india = any(k in location_str for k in indian_keywords)
+            
+            # Match routing logic from save_to_sheets
+            is_remote_board = job.get('source') in ['WeWorkRemotely', 'Remotive']
+            
+            category_key = ''
+            if is_direct:
+                category_key = 'Direct_Portals'
+            elif is_remote_board:
+                category_key = 'International_Remote'
+            elif is_india:
+                if 'remote' in location_str or work_mode == 'Remote':
+                    category_key = 'Indian_Remote'
+                else:
+                    category_key = 'Indian_Onsite'
+            elif work_mode == 'International' or ('remote' in location_str and not is_india):
+                 category_key = 'International_Remote'
+            else:
+                category_key = 'Career_Portals'
+            # Override category if we explicitly scanned for it and it matches geographically
+            if target_category and target_category in selected_cats:
+                # If they want Indian Onsite, an ATS job in India Onsite can also fit that sheet,
+                # but to avoid duplicates across categories, we should just let ALL valid jobs be processed 
+                # that were scraped in this run and route them to their correct destination.
+                pass
+                
+            filtered_jobs.append(job)
         
-        if not jobs:
-            continue
+        print(f"   [AI] Scoring {min(len(filtered_jobs), limit)} matching jobs...")
         
-        # Score each job (limit to 10 to save time, then pick top 5)
+        # Step 3: Score
         scored_jobs = []
-        for job in jobs[:10]:  # Only score top 10 to save API calls
+        for job in filtered_jobs[:limit]:
             score, reason = score_job_match(
-                job['title'],
-                job['company'],
-                job['description']
+                job.get('title', ''),
+                job.get('company', ''),
+                job.get('description', '')
             )
             
             job['Score'] = score
             job['Summary'] = reason
             scored_jobs.append(job)
             
-            print(f"   • {job['title']} at {job['company']}: {score}/100")
-            time.sleep(1)  # Rate limiting
+            print(f"   • {job.get('title', '')}: {score}/100")
+            time.sleep(0.5)
         
-        # Sort by score and take top 5
         scored_jobs.sort(key=lambda x: x['Score'], reverse=True)
-        top_5 = scored_jobs[:5]
-        
-        final_recommendations.extend(top_5)
-        
-        print(f"   [OK] Selected top 5 jobs for {category}")
-    
+        final_recommendations.extend(scored_jobs)
+        print(f"   [OK] Processed {len(scored_jobs)} jobs")
+
     # Step 4: Save to Google Sheets
     if final_recommendations:
         print(f"\n[SAVE] Saving {len(final_recommendations)} recommendations to Google Sheets...")
@@ -326,6 +512,9 @@ def run_system_recommendation():
     print("\n" + "="*70)
     print("[SUCCESS] SYSTEM RECOMMENDATION COMPLETE!")
     print("="*70)
+    
+    # Return for external use if needed, though mostly run via CLI
+    return final_recommendations
 
 # ========== GOOGLE SHEETS ==========
 
@@ -369,8 +558,8 @@ def save_to_sheets(jobs):
             try:
                 existing_data = worksheet.get_all_records()
                 for row in existing_data:
-                    url = row.get('Link', '')
-                    if url:
+                    url = str(row.get('Link', '')).strip()
+                    if url and url != '#':
                         existing_urls.add(url)
             except:
                 continue
@@ -385,83 +574,85 @@ def save_to_sheets(jobs):
         }
         
         for job in jobs:
-            # Skip if already exists
-            if job['job_url'] in existing_urls:
+            # Skip if already exists and is a valid URL
+            job_url = str(job.get('job_url', '')).strip()
+            if job_url and job_url != '#' and job_url in existing_urls:
                 continue
             
             # Determine target sheet based on job characteristics
-            location_str = job['location'].lower()
-            work_mode = job['work_mode']
-            source_str = job['source'].lower()
+            location_str = str(job.get('location', '')).lower()
+            work_mode = job.get('work_mode', 'Onsite')
+            source_str = str(job.get('source', '')).lower()
             
             # Check if from direct portals (ATS or Big Tech)
-            # More strict check - source must be exactly one of these OR URL must contain them
             direct_portal_sources = ['Greenhouse', 'Lever', 'Google', 'Microsoft', 'Apple', 'Amazon', 'Meta', 'Netflix']
             direct_portal_urls = ['greenhouse.io', 'lever.co', 'google.com/careers', 'microsoft.com/careers']
             
             is_direct = (
-                job['source'] in direct_portal_sources or
+                job.get('source') in direct_portal_sources or
                 any(url_pattern in job['job_url'].lower() for url_pattern in direct_portal_urls)
             )
             
-            # Routing logic - Check location/work_mode FIRST, then direct portals
-            if work_mode == 'International':
-                # Jobs categorized as International go to International_Remote
-                target_worksheet = ws_international_remote
-                job_counts['International_Remote'] += 1
-            elif 'india' in location_str and work_mode == 'Remote':
-                target_worksheet = ws_indian_remote
-                job_counts['Indian_Remote'] += 1
-            elif 'india' in location_str and work_mode in ['Onsite', 'Hybrid']:
-                target_worksheet = ws_indian_onsite
-                job_counts['Indian_Onsite'] += 1
-            elif work_mode == 'Remote':
-                # Other remote jobs (not India, not already categorized as International)
-                target_worksheet = ws_international_remote
-                job_counts['International_Remote'] += 1
-            elif work_mode in ['Onsite', 'Hybrid'] and 'india' not in location_str:
-                # Non-India Onsite/Hybrid jobs go to Career Portals
-                # (unless they're from direct portals, checked below)
-                if is_direct:
-                    target_worksheet = ws_direct_portals
-                    job_counts['Direct_Portals'] += 1
-                else:
-                    target_worksheet = ws_career_portals
-                    job_counts['Career_Portals'] += 1
-            elif is_direct:
-                # Direct portals (Greenhouse/Lever) that don't match above categories
+            # Check if location is in India using keywords
+            indian_keywords = ['india', 'mumbai', 'delhi', 'bangalore', 'bengaluru', 'hyderabad', 
+                              'chennai', 'pune', 'kolkata', 'ahmedabad', 'gurgaon', 'noida',
+                              'chandigarh', 'jaipur', 'kochi', 'indore', 'bhopal', 'lucknow']
+            
+            is_india = any(k in location_str for k in indian_keywords)
+            
+            # Routing logic - Simplified for robustness
+            target_worksheet = None
+            category_key = ''
+            is_remote_board = job.get('source') in ['WeWorkRemotely', 'Remotive']
+            
+            if is_direct:
                 target_worksheet = ws_direct_portals
-                job_counts['Direct_Portals'] += 1
+                category_key = 'Direct_Portals'
+            elif is_remote_board:
+                target_worksheet = ws_international_remote
+                category_key = 'International_Remote'
+            elif is_india:
+                if 'remote' in location_str or work_mode == 'Remote':
+                    target_worksheet = ws_indian_remote
+                    category_key = 'Indian_Remote'
+                else:
+                    target_worksheet = ws_indian_onsite
+                    category_key = 'Indian_Onsite'
+            elif work_mode == 'International' or ('remote' in location_str and not is_india):
+                 target_worksheet = ws_international_remote
+                 category_key = 'International_Remote'
             else:
                 target_worksheet = ws_career_portals
-                job_counts['Career_Portals'] += 1
+                category_key = 'Career_Portals'
             
-            # Prepare row data
-            row = [
-                job['title'],
-                job['company'],
-                job['location'],
-                job['work_mode'],
-                job['job_url'],
-                job['source'],
-                job.get('salary_range', ''),
-                job.get('posted_date', ''),
-                job.get('Score', ''),
-                job.get('Summary', '')
-            ]
+            # Use specific overrides if category was explicitly passed in scraping?
+            # For now, auto-detect is safer to ensure correct placement.
             
-            # Append to appropriate sheet
-            target_worksheet.append_row(row)
-            existing_urls.add(job['job_url'])
+            if target_worksheet:
+                 # Prepare row data
+                row = [
+                    job.get('title', ''),
+                    job.get('company', ''),
+                    job.get('location', ''),
+                    job.get('work_mode', ''),
+                    job.get('job_url', ''),
+                    job.get('source', ''),
+                    job.get('salary_range', ''),
+                    job.get('posted_date', ''),
+                    job.get('Score', ''),
+                    job.get('Summary', '')
+                ]
+                
+                target_worksheet.append_row(row)
+                job_counts[category_key] += 1
+                existing_urls.add(job['job_url'])
         
         # Print summary
         total_added = sum(job_counts.values())
         print(f"\n[OK] Added {total_added} jobs to category sheets!")
-        print(f"   - Direct_Portals: {job_counts['Direct_Portals']}")
-        print(f"   - International_Remote: {job_counts['International_Remote']}")
-        print(f"   - Indian_Remote: {job_counts['Indian_Remote']}")
-        print(f"   - Indian_Onsite: {job_counts['Indian_Onsite']}")
-        print(f"   - Career_Portals: {job_counts['Career_Portals']}")
+        for cat, count in job_counts.items():
+            if count > 0:
+                print(f"   - {cat}: {count}")
         
     except Exception as e:
         print(f"[ERROR] Error saving to sheets: {e}")
@@ -469,8 +660,14 @@ def save_to_sheets(jobs):
 # ========== MAIN ==========
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--category', type=str, default=None, help='Specific category to scrape')
+    parser.add_argument('--limit', type=int, default=10, help='Number of jobs')
+    args = parser.parse_args()
+
     try:
-        run_system_recommendation()
+        run_system_recommendation(target_category=args.category, limit=args.limit)
     except Exception as e:
         print(f"\n[ERROR] FATAL ERROR: {e}")
         import traceback

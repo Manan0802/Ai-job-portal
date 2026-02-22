@@ -25,7 +25,8 @@ class NetworkingAgent:
         Use Google Dorks to find LinkedIn profiles for a company + role
         Requires SerpApi key or simple scraping (SerpApi recommended for stability)
         """
-        query = f'site:linkedin.com/in/ "{company_name}" "{role_title}"'
+        query = f'site:linkedin.com/in/ "{company_name}" "{role_title}" "India"'
+
         
         try:
             params = {
@@ -68,7 +69,7 @@ class NetworkingAgent:
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
-                max_tokens=100
+                max_tokens=300
             )
             return response.choices[0].message.content.strip()
         except Exception:
@@ -97,7 +98,8 @@ class NetworkingAgent:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.7
+                temperature=0.7,
+                max_tokens=1000
             )
             return response.choices[0].message.content.strip()
         except:

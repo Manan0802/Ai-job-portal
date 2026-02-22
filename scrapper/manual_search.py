@@ -382,6 +382,9 @@ def scrape_jobs_by_query(query, country=None, location=None, work_mode=None, res
         # Remove duplicates
         final_df = final_df.drop_duplicates(subset=['job_url'], keep='first')
         
+        # Fill NaNs to prevent JSON errors
+        final_df = final_df.fillna("")
+        
         print("\n" + "="*70)
         print(f"✅ TOTAL JOBS FOUND: {len(final_df)}")
         print("="*70)

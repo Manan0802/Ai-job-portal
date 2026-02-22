@@ -16,7 +16,7 @@ import os
 
 # ========== JOBSPY SCRAPER (LinkedIn, Indeed, Glassdoor) ==========
 
-def scrape_jobspy(role, location="Remote", results_wanted=50):
+def scrape_jobspy(role, location="Remote", results_wanted=60):
     """
     Scrape from LinkedIn, Indeed, Glassdoor using JobSpy
     Sorted by most recent first
