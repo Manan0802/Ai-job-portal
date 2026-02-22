@@ -698,22 +698,22 @@ def main():
                         except Exception as e:
                             st.error(f"❌ Error: {e}")
             
-                st.markdown("---")
-                st.markdown("### 📱 Notifications")
-                if st.button("🔔 Test WhatsApp Alert", use_container_width=True):
-                    try:
-                        from scrapper.alert_bot import AlertBot
-                    except ImportError:
-                        from alert_bot import AlertBot
-                    bot = AlertBot()
-                    if bot.whatsapp_phone and bot.twilio_sid and bot.twilio_token:
-                        success = bot.send_high_score_alert("Test Role", "Test Company", 99, "https://example.com")
-                        if success:
-                            st.success("Test alert sent to WhatsApp via Twilio! Check your phone.")
-                        else:
-                            st.error("Failed to send WhatsApp alert. Check console logs.")
+            st.markdown("---")
+            st.markdown("### 📱 Notifications")
+            if st.button("🔔 Test WhatsApp Alert", use_container_width=True):
+                try:
+                    from scrapper.alert_bot import AlertBot
+                except ImportError:
+                    from alert_bot import AlertBot
+                bot = AlertBot()
+                if bot.whatsapp_phone and bot.twilio_sid and bot.twilio_token:
+                    success = bot.send_high_score_alert("Test Role", "Test Company", 99, "https://example.com")
+                    if success:
+                        st.success("Test alert sent to WhatsApp via Twilio! Check your phone.")
                     else:
-                        st.error("Missing twilio_sid or twilio_token in ai_config.json")
+                        st.error("Failed to send WhatsApp alert. Check console logs.")
+                else:
+                    st.error("Missing twilio_sid or twilio_token in ai_config.json")
 
         with col_filt:
             category_filter = st.selectbox(
