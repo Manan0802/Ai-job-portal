@@ -607,7 +607,14 @@ def main():
     # Custom CSS for tabs is already applied via style injection
     
     # Use option_menu-like styling with st.tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["🤖 AI Headhunter", "🔍 Manual Hunt", "📝 Resume Tailor", "🤝 Networking God"])
+    tab1, tab2, tab_bigtech, tab3, tab4, tab_interview = st.tabs([
+        "🤖 AI Headhunter", 
+        "🔍 Manual Hunt", 
+        "🏢 FAANG Scraper", 
+        "📝 Resume Tailor", 
+        "🤝 Networking God", 
+        "🧠 Interview War Room"
+    ])
 
     # Load data
     df = load_data()
@@ -713,6 +720,20 @@ def main():
                 display_category_jobs(df, "All Jobs")
             else:
                 display_category_jobs(df, category_filter)
+                
+        st.markdown("---")
+        st.markdown("### 📱 Notifications")
+        if st.button("🔔 Test Telegram Alert"):
+            try:
+                from scrapper.alert_bot import AlertBot
+            except ImportError:
+                from alert_bot import AlertBot
+            bot = AlertBot()
+            if bot.telegram_token and bot.telegram_chat_id:
+                bot.send_high_score_alert("Test Role", "Test Company", 99, "https://example.com")
+                st.success("Test alert sent to Telegram! Check your phone.")
+            else:
+                st.error("Missing token or chat_id in ai_config.json")
             
     # ========== TAB 2: MANUAL SEARCH ==========
     with tab2:
@@ -1018,8 +1039,88 @@ def main():
             else:
                 st.dataframe(net_df, use_container_width=True)
 
+    # ========== TAB BIG TECH: FAANG SCRAPER ==========
+    with tab_bigtech:
+        st.markdown("## 🏢 FAANG Scraper - Direct Aggregator")
+        st.markdown("*Bypass job boards and query Big Tech APIs directly using Google Jobs*")
+        
+        col_bt1, col_bt2 = st.columns([1, 2])
+        with col_bt1:
+            bt_role = st.text_input("Target FAANG Role", "Software Engineer", key="bt_role")
+            bt_location = st.text_input("Target FAANG Location", "Remote", key="bt_loc")
+            
+            if st.button("🚀 Search Big Tech", type="primary", use_container_width=True):
+                with st.spinner("Querying FAANG Direct Portals..."):
+                    try:
+                        from scrapper.big_tech_scraper import BigTechScraper
+                        bt_scraper = BigTechScraper()
+                        st.session_state.bt_results = bt_scraper.scrape_big_tech(bt_role, bt_location)
+                    except Exception as e:
+                        st.error(f"Failed to scrape: {e}")
+                        
+        with col_bt2:
+            if 'bt_results' in st.session_state and st.session_state.bt_results is not None:
+                bt_res = st.session_state.bt_results
+                if len(bt_res) == 0:
+                    st.warning("No direct FAANG jobs found. Try adjusting role/location/SerpApi Key.")
+                else:
+                    st.success(f"Found {len(bt_res)} direct Big Tech jobs!")
+                    for idx, job in enumerate(bt_res):
+                        with st.expander(f"{job['company']} - {job['title']} 🏢"):
+                            st.write(f"**Location:** {job['location']}")
+                            st.write(f"**Posted:** {job['posted_date']}")
+                            st.write(f"**Description:** {job['description']}")
+                            st.markdown(f"🔗 [Apply Directly on {job['company']}]({job['job_url']})")
+
+    # ========== TAB INTERVIEW: INTERVIEW WAR ROOM ==========
+    with tab_interview:
+        st.markdown("## 🧠 Interview War Room")
+        st.markdown("*Instantly generate a custom Cheat Sheet for your upcoming interview*")
+        
+        col_iw1, col_iw2 = st.columns([1, 1])
+        with col_iw1:
+            st.markdown("### 1️⃣ Interview Details")
+            iw_company = st.text_input("Company Name", "Google", key="iw_comp")
+            iw_role = st.text_input("Role", "Software Engineer", key="iw_role")
+            
+            if st.button("⚔️ Generate Battle Plan (PDF)", type="primary", use_container_width=True):
+                with st.spinner(f"Scouring Glassdoor/Reddit for {iw_company} {iw_role} questions..."):
+                    try:
+                        from scrapper.interview_war_room import InterviewWarRoom
+                        from scrapper.resume_reader import get_master_resume
+                        
+                        resume = get_master_resume()
+                        if resume.startswith("Resume not"):
+                            st.error(resume)
+                        else:
+                            war_room = InterviewWarRoom()
+                            content = war_room.generate_cheat_sheet(iw_company, iw_role, resume)
+                            st.session_state.iw_content = content
+                            
+                            pdf_path = war_room.create_pdf(content, iw_company, iw_role)
+                            if pdf_path:
+                                st.session_state.iw_pdf_path = pdf_path
+                                st.success("✅ Cheat Sheet successfully generated!")
+                            else:
+                                st.error("PDF generation failed.")
+                    except Exception as e:
+                        st.error(f"War Room Error: {e}")
+                        
+        with col_iw2:
+            st.markdown("### 2️⃣ Your Cheat Sheet")
+            if 'iw_content' in st.session_state:
+                st.text_area("Live Preview", st.session_state.iw_content, height=300)
+                
+            if 'iw_pdf_path' in st.session_state and os.path.exists(st.session_state.iw_pdf_path):
+                with open(st.session_state.iw_pdf_path, "rb") as pdf_file:
+                    st.download_button(
+                        label="📄 Download Cheat Sheet PDF",
+                        data=pdf_file,
+                        file_name=os.path.basename(st.session_state.iw_pdf_path),
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
 
 if __name__ == "__main__":
     main()
-
